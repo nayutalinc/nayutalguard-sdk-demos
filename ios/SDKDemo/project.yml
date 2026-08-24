@@ -1,0 +1,44 @@
+# SDKDemo — minimal HOST app for NayutalSDK, iOS twin of android/demo.
+# Regenerate the Xcode project with:  xcodegen generate
+#
+# Standalone: consumes the SHIPPED NayutalSDK.xcframework from Frameworks/,
+# not a local package path, so this builds from a bare clone outside our repo.
+#
+# Credentials come from Secrets.xcconfig (gitignored — copy the .example),
+# flow into Info.plist at build time, and are read by the app at launch.
+# The key is never in source or in the repo.
+name: SDKDemo
+options:
+  bundleIdPrefix: com.nayutal
+  deploymentTarget:
+    iOS: "16.0"
+configFiles:
+  Debug: Secrets.xcconfig
+  Release: Secrets.xcconfig
+targets:
+  SDKDemo:
+    type: application
+    platform: iOS
+    sources: [Sources]
+    dependencies:
+      # The SHIPPED XCFramework. Download it from the sdk-v1.1.1 release and
+      # unzip it into Frameworks/ — see README.md. Not committed: you are meant
+      # to verify its SHA-256 against the release notes first.
+      #
+      # embed: the framework is a DYNAMIC library — without embedding, the app
+      # dyld-crashes at launch on device (simulator masks it via an rpath).
+      - framework: Frameworks/NayutalSDK.xcframework
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nayutal.sdkdemo
+        # Set your own team ID for device builds; simulator builds need none.
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.9"
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        NayutalBaseUrl: $(NAYUTAL_BASE_URL)
+        NayutalApiKey: $(NAYUTAL_API_KEY)

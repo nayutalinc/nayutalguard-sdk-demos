@@ -1,0 +1,88 @@
+# NayutalGuard SDK — iOS demo
+
+A minimal host app showing an end-to-end SDK integration: it gathers device
+facts, hands them to the SDK, and renders the findings. One SwiftUI file — the
+integration is the point, not the app.
+
+This project is **standalone**. It consumes the shipped XCFramework the same way
+you will, so what builds here is what builds for you.
+
+## Prerequisites
+
+- Xcode 16 or newer (deployment target iOS 16.0)
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) — `brew install xcodegen`
+
+The Xcode project is generated from `project.yml` rather than committed, so
+there is no stale `.pbxproj` to merge.
+
+## 1. Get the SDK artifact
+
+Download `NayutalSDK-1.1.1.xcframework.zip` from the **sdk-v1.1.1** release
+notes page:
+
+    https://docs.nayutalguard.com/release-notes/
+    (the SDK package itself is delivered to integrators by Nayutal; verify the
+    artifact hash against that page before embedding)
+
+If you received the SDK out-of-band (a delivery link rather than repo access),
+use the artifact and checksum from that delivery — they are the same bytes.
+
+## 2. Verify it before you use it
+
+The release notes publish a SHA-256 for every artifact. Check the file you
+downloaded against the value on that page:
+
+    shasum -a 256 NayutalSDK-1.1.1.xcframework.zip
+
+Expected for `NayutalSDK-1.1.1.xcframework.zip`:
+
+    6d88c93ae474a8ea14b5b89862cc6ac472d8ccc21fb8218f89520e4e92b0eb4b
+
+If it does not match, stop and tell us. Do not build against it.
+
+## 3. Drop it in
+
+    mkdir -p Frameworks
+    unzip NayutalSDK-1.1.1.xcframework.zip -d Frameworks/
+
+You should end up with `Frameworks/NayutalSDK.xcframework`. That path is
+gitignored on purpose: the artifact is downloaded and verified, never committed.
+
+## 4. Supply your API key
+
+Credentials live in `Secrets.xcconfig`, which is gitignored. Copy the example
+and fill it in:
+
+    cp Secrets.xcconfig.example Secrets.xcconfig
+
+Then edit it:
+
+    NAYUTAL_BASE_URL = https:/$()/<base-url-you-received>/
+    NAYUTAL_API_KEY = your-key-here
+
+The `$()` in the URL is not a typo — it stops Xcode from reading `//` as the
+start of a comment. The values flow into `Info.plist` at build time and are read
+at launch, so the key never appears in source.
+
+## 5. Generate, build, run
+
+    xcodegen generate
+    open SDKDemo.xcodeproj
+
+Then pick a simulator and hit Run. From the command line:
+
+    xcodegen generate
+    xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
+      -destination 'generic/platform=iOS Simulator' build
+
+To build for one specific simulator instead, name a device you actually have
+(`xcrun simctl list devices available`) rather than assuming a model:
+
+    xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
+      -destination 'platform=iOS Simulator,name=iPhone 17' build
+
+## Signing
+
+`project.yml` leaves `DEVELOPMENT_TEAM` empty; simulator builds need none. For a
+machines. Building for a **simulator** ignores it. To run on a physical device,
+device build, set `DEVELOPMENT_TEAM` to your own team ID.

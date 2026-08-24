@@ -1,0 +1,5 @@
+# The SDK artifact is downloaded from the release, never committed --
+# you are meant to hash-verify it yourself. See ../README.md.
+*.xcframework
+*.zip
+!.gitignore
