@@ -1,3 +1,6 @@
 Secrets.xcconfig
 SDKDemo.xcodeproj/
 Info.plist
+# Build outputs are never committed (the omission that let a build land in a commit once).
+build/
+DerivedData/
