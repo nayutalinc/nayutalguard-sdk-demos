@@ -63,6 +63,9 @@ class MainActivity : Activity() {
         }
         setContentView(LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
+            // Android 15+ lays a targetSdk-35 app out edge-to-edge: without this
+            // the button sits under the status bar and cannot be tapped.
+            fitsSystemWindows = true
             addView(scanButton, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
             addView(ScrollView(this@MainActivity).apply { addView(output) },
                 LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
