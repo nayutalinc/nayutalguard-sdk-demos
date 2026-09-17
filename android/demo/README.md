@@ -18,7 +18,7 @@ Gradle itself is vendored — use the included `./gradlew`, no separate install.
 
 ## 1. Get the SDK artifact
 
-Download `nayutal-sdk-1.1.1.aar` from the **sdk-v1.1.1** release notes page:
+Download `nayutal-sdk-1.4.2.aar` from the **sdk-v1.4.2** release notes page:
 
     https://docs.nayutalguard.com/release-notes/
     (the SDK package itself is delivered to integrators by Nayutal; verify the
@@ -32,18 +32,18 @@ use the artifact and checksum from that delivery — they are the same bytes.
 The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
-    shasum -a 256 nayutal-sdk-1.1.1.aar
+    shasum -a 256 nayutal-sdk-1.4.2.aar
 
-Expected for `nayutal-sdk-1.1.1.aar`:
+Expected for `nayutal-sdk-1.4.2.aar`:
 
-    164d97ddc19326a2bb9f3d899d2b2cdcce4b48b549f4385235c899929f60b108
+    e4e9c04972ff7d5dec71d84530ca318e6f7198899972fabce51c37fd9545a232
 
 If it does not match, stop and tell us. Do not build against it.
 
 ## 3. Drop it in
 
     mkdir -p libs
-    cp /path/to/nayutal-sdk-1.1.1.aar libs/
+    cp /path/to/nayutal-sdk-1.4.2.aar libs/
 
 `libs/*.aar` is gitignored on purpose: the artifact is downloaded and verified,
 never committed.

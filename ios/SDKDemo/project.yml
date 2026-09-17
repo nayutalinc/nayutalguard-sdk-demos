@@ -21,7 +21,7 @@ targets:
     platform: iOS
     sources: [Sources]
     dependencies:
-      # The SHIPPED XCFramework. Download it from the sdk-v1.1.1 release and
+      # The SHIPPED XCFramework. Download it from the sdk-v1.4.2 release and
       # unzip it into Frameworks/ — see README.md. Not committed: you are meant
       # to verify its SHA-256 against the release notes first.
       #

@@ -17,7 +17,7 @@ there is no stale `.pbxproj` to merge.
 
 ## 1. Get the SDK artifact
 
-Download `NayutalSDK-1.1.1.xcframework.zip` from the **sdk-v1.1.1** release
+Download `NayutalSDK-1.4.2.xcframework.zip` from the **sdk-v1.4.2** release
 notes page:
 
     https://docs.nayutalguard.com/release-notes/
@@ -32,18 +32,18 @@ use the artifact and checksum from that delivery — they are the same bytes.
 The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
-    shasum -a 256 NayutalSDK-1.1.1.xcframework.zip
+    shasum -a 256 NayutalSDK-1.4.2.xcframework.zip
 
-Expected for `NayutalSDK-1.1.1.xcframework.zip`:
+Expected for `NayutalSDK-1.4.2.xcframework.zip`:
 
-    6d88c93ae474a8ea14b5b89862cc6ac472d8ccc21fb8218f89520e4e92b0eb4b
+    8c9d0321fd825c1e58d5304e3c67946058f6c4a3108f84dc1123052c5a23edbc
 
 If it does not match, stop and tell us. Do not build against it.
 
 ## 3. Drop it in
 
     mkdir -p Frameworks
-    unzip NayutalSDK-1.1.1.xcframework.zip -d Frameworks/
+    unzip NayutalSDK-1.4.2.xcframework.zip -d Frameworks/
 
 You should end up with `Frameworks/NayutalSDK.xcframework`. That path is
 gitignored on purpose: the artifact is downloaded and verified, never committed.
