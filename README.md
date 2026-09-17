@@ -7,7 +7,7 @@ scan, consume the event stream.
 
 | Demo | Platform | Consumes |
 |---|---|---|
-| [`android/demo`](android/demo/) | Android (Kotlin) | `nayutal-sdk-1.1.1.aar` in `libs/` |
+| [`android/demo`](android/demo/) | Android (Kotlin) | `nayutal-sdk-1.4.2.aar` in `libs/` |
 | [`ios/SDKDemo`](ios/SDKDemo/) | iOS (Swift, XcodeGen) | `NayutalSDK.xcframework` in `Frameworks/` |
 
 The SDK package is delivered to integrators by Nayutal. Verify the artifact you

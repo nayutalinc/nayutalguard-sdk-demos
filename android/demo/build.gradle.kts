@@ -47,10 +47,10 @@ android {
 }
 
 dependencies {
-    // The SHIPPED SDK artifact. Download it from the sdk-v1.1.1 release and
+    // The SHIPPED SDK artifact. Download it from the sdk-v1.4.2 release and
     // drop it in libs/ — see README.md. It is not committed: you are meant to
     // verify its SHA-256 against the release notes before using it.
-    implementation(files("libs/nayutal-sdk-1.1.1.aar"))
+    implementation(files("libs/nayutal-sdk-1.4.2.aar"))
 
     // The SDK's own dependencies, declared explicitly.
     //

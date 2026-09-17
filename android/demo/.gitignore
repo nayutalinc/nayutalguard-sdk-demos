@@ -1,0 +1,4 @@
+# Build outputs and Gradle state are never committed. (libs/*.aar is ignored by libs/.gitignore.)
+build/
+.gradle/
+local.properties
