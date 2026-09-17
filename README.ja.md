@@ -28,9 +28,9 @@ shasum -a 256 nayutal-sdk-1.4.2.aar NayutalSDK-1.4.2.xcframework.zip
 ```
 
 各リリースの同じ一覧表は次のページで公開しています。
-**https://docs.nayutalguard.com/release-notes/**
+**https://docs.nayutalguard.com/ja/release-notes/**
 
-組み込みに関する全体のドキュメント: **https://docs.nayutalguard.com/**
+組み込みに関する全体のドキュメント: **https://docs.nayutalguard.com/ja/**
 
 ## 次に読むもの
 
