@@ -26,7 +26,8 @@
 //   node scripts/check-readme-drift.mjs --selftest  # the guard must be able to fail
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { join, dirname, basename, relative } from 'node:path';
+import { join, dirname, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 const PIN_RE = /^<!--\s*en-source:\s*([\w./-]*README\.md)\s+sha256:([0-9a-f]{64})\s*-->\s*$/m;
@@ -94,17 +95,24 @@ export function compareReadme(enText, jaText, enPath, jaExists = () => true) {
   return failures;
 }
 
-export const pinLine = (enPath) => `<!-- en-source: ${enPath} sha256:${sha256(readFileSync(enPath))} -->`;
+export function pinLine(enPath) {
+  if (!enPath) throw new Error('--pin needs the path of an English README, e.g. --pin android/demo/README.md');
+  // Normalised to the form the checker derives (relative to the repo root, no leading ./),
+  // so the printed pin is one the check accepts.
+  const rel = relative(process.cwd(), resolve(enPath));
+  return `<!-- en-source: ${rel} sha256:${sha256(readFileSync(rel))} -->`;
+}
 
 function selftest() {
-  const en = '# Title\n\n日本語版: [README.ja.md](README.ja.md)\n\nUse `foo/bar.kt` and version 1.4.2, hash `' + 'a'.repeat(64) + '`.\n\n```bash\nshasum -a 256 x.aar\n```\n\nSee [Android](android/demo/README.md) and **https://docs.nayutalguard.com/release-notes/**.\n';
-  const good = `<!-- en-source: README.md sha256:${sha256(Buffer.from(en))} -->\n# 見出し\n\nEnglish: [README.md](README.md)\n\n\`foo/bar.kt\` とバージョン 1.4.2、ハッシュ \`${'a'.repeat(64)}\` を使います。\n\n\`\`\`bash\nshasum -a 256 x.aar\n\`\`\`\n\n[Android](android/demo/README.ja.md) と **https://docs.nayutalguard.com/release-notes/** を参照してください。\n`;
+  const en = '# Title\n\n日本語版: [README.ja.md](README.ja.md)\n\nUse `foo/bar.kt` and version 1.4.2, hash `' + 'a'.repeat(64) + '`. Digest ' + 'c'.repeat(64) + ' in prose.\n\n```bash\nshasum -a 256 x.aar\n```\n\nSee [Android](android/demo/README.md) and **https://docs.nayutalguard.com/release-notes/**.\n';
+  const good = `<!-- en-source: README.md sha256:${sha256(Buffer.from(en))} -->\n# 見出し\n\nEnglish: [README.md](README.md)\n\n\`foo/bar.kt\` とバージョン 1.4.2、ハッシュ \`${'a'.repeat(64)}\` を使います。本文中のダイジェスト ${'c'.repeat(64)}。\n\n\`\`\`bash\nshasum -a 256 x.aar\n\`\`\`\n\n[Android](android/demo/README.ja.md) と **https://docs.nayutalguard.com/release-notes/** を参照してください。\n`;
   const cases = [
     ['identical code passes', good, 0],
     ['changed code block fails', good.replace('shasum -a 256 x.aar', 'shasum -a 256 y.aar'), 1],
     ['changed inline path fails', good.replace('foo/bar.kt', 'foo/baz.kt'), 1],
     ['changed version fails', good.replace('1.4.2', '1.4.1'), 1],
-    ['changed SHA-256 fails', good.replace('a'.repeat(64), 'b'.repeat(64)), 1],
+    ['changed SHA-256 inside inline code fails', good.replace('a'.repeat(64), 'b'.repeat(64)), 1],
+    ['changed SHA-256 in bare prose fails on the SHA-256 check itself', good.replace('c'.repeat(64), 'd'.repeat(64)), 1, undefined, 'SHA-256 values'],
     ['link to the English README where the Japanese one exists fails', good.replace('android/demo/README.ja.md', 'android/demo/README.md'), 1],
     ['link to the English README passes while the Japanese one is missing', good.replace('android/demo/README.ja.md', 'android/demo/README.md'), 0, () => false],
     ['docs link in its /ja/ form passes (same page)', good.replace('docs.nayutalguard.com/release-notes/', 'docs.nayutalguard.com/ja/release-notes/'), 0],
@@ -113,10 +121,10 @@ function selftest() {
     ['missing pin fails', good.split('\n').slice(1).join('\n'), 1],
   ];
   let bad = 0;
-  for (const [name, ja, wantFail, exists] of cases) {
+  for (const [name, ja, wantFail, exists, mustName] of cases) {
     // Default fixture state = this repository today: README.ja.md twins exist, no /ja/ docs page does.
     const f = compareReadme(en, ja, 'README.md', exists ?? ((l) => !l.startsWith('http')));
-    const ok = wantFail ? f.length > 0 : f.length === 0;
+    const ok = (wantFail ? f.length > 0 : f.length === 0) && (!mustName || f.some(x => x.includes(mustName)));
     console.log(`${ok ? 'ok  ' : 'FAIL'} selftest: ${name}${f.length ? ' -> ' + f[0].slice(0, 90) : ''}`);
     if (!ok) bad++;
   }
@@ -125,7 +133,9 @@ function selftest() {
 }
 
 const args = process.argv.slice(2);
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Compared as paths, not URL-vs-path: a checkout under a directory with a space (or any
+// character a file URL encodes) would otherwise make this false and the script a silent exit 0.
+if (fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   if (args[0] === '--selftest') process.exit(selftest() ? 1 : 0);
   if (args[0] === '--pin') { console.log(pinLine(args[1])); process.exit(0); }
   let failed = 0, checked = 0;
