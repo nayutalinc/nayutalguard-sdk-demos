@@ -19,18 +19,18 @@ there is no stale `.pbxproj` to merge.
 
 ## 1. Get the SDK artifact
 
-Download `NayutalSDK-1.4.2.xcframework.zip` from the **sdk-v1.4.2** release
-notes page:
+`NayutalSDK-1.4.2.xcframework.zip` comes from one of two places, and the bytes are the same:
+
+- the SDK package Nayutal handed you with your integration (the usual path), or
+- the assets of the **sdk-v1.4.2** GitHub release, if your integration includes
+  access to the `nayutalguard` repository (the page is not public):
 
 ```text
-https://docs.nayutalguard.com/release-notes/
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.4.2
 ```
 
-(the SDK package itself is delivered to integrators by Nayutal; verify the
-artifact hash against that page before embedding)
-
-If you received the SDK out-of-band (a delivery link rather than repo access),
-use the artifact and checksum from that delivery — they are the same bytes.
+Either way, verify the file against the published hash table in step 2 before
+embedding it.
 
 ## 2. Verify it before you use it
 

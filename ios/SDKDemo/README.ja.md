@@ -1,4 +1,4 @@
-<!-- en-source: ios/SDKDemo/README.md sha256:a8ef6399d96e5c898ada9e83c9f7d1258fa0574c51700908d330471d67ad0ce4 -->
+<!-- en-source: ios/SDKDemo/README.md sha256:828a1b3e9fc188afeb48f36fb0dda145c4cf8a6ba680d890ba55b365223a239c -->
 # NayutalGuard SDK — iOS デモ
 
 English: [README.md](README.md)
@@ -18,15 +18,16 @@ Xcode プロジェクトはコミットせず、`project.yml` から生成しま
 
 ## 1. SDK の成果物を入手する
 
-**sdk-v1.4.2** のリリースノートページから `NayutalSDK-1.4.2.xcframework.zip` をダウンロードしてください。
+`NayutalSDK-1.4.2.xcframework.zip` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
+
+- 組み込みの際に Nayutal からお渡しした SDK パッケージ（通常はこちらです）
+- **sdk-v1.4.2** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
 
 ```text
-https://docs.nayutalguard.com/release-notes/
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.4.2
 ```
 
-（SDK パッケージ自体は Nayutal からお客様にお渡しします。組み込む前に、成果物のハッシュ値をこのページと照合してください）
-
-SDK をリポジトリ経由ではなく別の方法（配布リンクなど）で受け取った場合は、その配布物の成果物とチェックサムを使ってください。内容は同じバイト列です。
+いずれの場合も、組み込む前に手順 2 で公開されているハッシュ値の一覧表と照合してください。
 
 ## 2. 使う前に検証する
 

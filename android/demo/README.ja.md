@@ -1,4 +1,4 @@
-<!-- en-source: android/demo/README.md sha256:5e76f6de22ad4d9555dcdfe35323251109cd27915a15628c7fa2281e4a4d8f25 -->
+<!-- en-source: android/demo/README.md sha256:b8480e0b9a5e52896f1b05cd6e812190d1635c6a1891d0c1f17c516eec3167f5 -->
 # NayutalGuard SDK — Android デモ
 
 English: [README.md](README.md)
@@ -19,15 +19,16 @@ Gradle 本体は同梱しています。付属の `./gradlew` を使ってくだ
 
 ## 1. SDK の成果物を入手する
 
-**sdk-v1.4.2** のリリースノートページから `nayutal-sdk-1.4.2.aar` をダウンロードしてください。
+`nayutal-sdk-1.4.2.aar` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
+
+- 組み込みの際に Nayutal からお渡しした SDK パッケージ（通常はこちらです）
+- **sdk-v1.4.2** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
 
 ```text
-https://docs.nayutalguard.com/release-notes/
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.4.2
 ```
 
-（SDK パッケージ自体は Nayutal からお客様にお渡しします。組み込む前に、成果物のハッシュ値をこのページと照合してください）
-
-SDK をリポジトリ経由ではなく別の方法（配布リンクなど）で受け取った場合は、その配布物の成果物とチェックサムを使ってください。内容は同じバイト列です。
+いずれの場合も、組み込む前に手順 2 で公開されているハッシュ値の一覧表と照合してください。
 
 ## 2. 使う前に検証する
 
