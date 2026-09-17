@@ -1,0 +1,33 @@
+# readme-drift — the Japanese READMEs never drift from the English ones.
+#
+# Runs scripts/check-readme-drift.mjs: every README.md has a README.ja.md beside it whose
+# pin carries the sha256 of the current English file (so an English edit that does not carry
+# its Japanese edit in the same commit fails), with code blocks byte-identical and inline
+# code, versions, SHA-256 values and links equal as multisets. The self-test runs first so a
+# check that can no longer fail is itself a failure.
+#
+# Read-only: no secrets, no writes, no tokens beyond the checkout. The only permission is
+# contents: read.
+name: readme-drift
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readme-drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: The guard must be able to fail
+        run: node scripts/check-readme-drift.mjs --selftest
+      - name: Japanese READMEs match the English ones
+        run: node scripts/check-readme-drift.mjs
