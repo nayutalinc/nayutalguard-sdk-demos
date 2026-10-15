@@ -128,6 +128,7 @@ class MainActivity : Activity() {
             isCharging = batteryManager?.isCharging ?: false,
             networkType = when {
                 caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> "WIFI"
+                caps?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true -> "ETHERNET"
                 caps?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> "CELLULAR"
                 caps?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true -> "VPN"
                 else -> "Unknown"

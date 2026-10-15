@@ -120,6 +120,7 @@ final class ScanModel: ObservableObject {
             defer { monitor.cancel() }
             let path = monitor.currentPath
             if path.usesInterfaceType(.wifi) { return "WIFI" }
+            if path.usesInterfaceType(.wiredEthernet) { return "ETHERNET" }
             if path.usesInterfaceType(.cellular) { return "CELLULAR" }
             return "Unknown"
         }()
