@@ -44,7 +44,7 @@ shasum -a 256 NayutalSDK-1.7.0.xcframework.zip
 Expected for `NayutalSDK-1.7.0.xcframework.zip`:
 
 ```text
-[sha256]
+b76c17d9d4667b089520643212eb9cacfc50bff0055bd0ed42b88a4b6d78053c
 ```
 
 If it does not match, stop and tell us. Do not build against it.

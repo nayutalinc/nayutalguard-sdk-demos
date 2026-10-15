@@ -1,4 +1,4 @@
-<!-- en-source: README.md sha256:f9edf78136e7947c1649566eabb1b54b87da8eb6bd432076fbba6c5738c3f70c -->
+<!-- en-source: README.md sha256:485190df1a0c4f03949279da975276745af83c0cc4e1980579a0da221550d9d7 -->
 # NayutalGuard SDK — デモホスト
 
 English: [README.md](README.md)
@@ -22,8 +22,8 @@ SDK パッケージは Nayutal からお客様にお渡しします。組み込�
 
 | 成果物 | SHA-256 |
 |---|---|
-| `nayutal-sdk-1.7.0.aar` | `[sha256]` |
-| `NayutalSDK-1.7.0.xcframework.zip` | `[sha256]` |
+| `nayutal-sdk-1.7.0.aar` | `d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672` |
+| `NayutalSDK-1.7.0.xcframework.zip` | `b76c17d9d4667b089520643212eb9cacfc50bff0055bd0ed42b88a4b6d78053c` |
 
 ```bash
 shasum -a 256 nayutal-sdk-1.7.0.aar NayutalSDK-1.7.0.xcframework.zip

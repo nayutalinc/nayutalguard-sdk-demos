@@ -1,4 +1,4 @@
-<!-- en-source: android/demo/README.md sha256:7fce23379916c868800e7a4488f8f78d81fc0bcda077008667583d9c5e376d50 -->
+<!-- en-source: android/demo/README.md sha256:9c66f00e4f9962251627633e4f4d61c200d29ed44816e8e3da7f730ea507b59f -->
 # NayutalGuard SDK — Android デモ
 
 English: [README.md](README.md)
@@ -41,7 +41,7 @@ shasum -a 256 nayutal-sdk-1.7.0.aar
 `nayutal-sdk-1.7.0.aar` の期待値:
 
 ```text
-[sha256]
+d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672
 ```
 
 一致しない場合は作業を止めて、私たちにご連絡ください。その成果物に対してビルドしないでください。

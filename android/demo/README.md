@@ -45,7 +45,7 @@ shasum -a 256 nayutal-sdk-1.7.0.aar
 Expected for `nayutal-sdk-1.7.0.aar`:
 
 ```text
-[sha256]
+d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672
 ```
 
 If it does not match, stop and tell us. Do not build against it.

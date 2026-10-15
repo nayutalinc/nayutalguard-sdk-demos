@@ -1,4 +1,4 @@
-<!-- en-source: ios/SDKDemo/README.md sha256:e19b7ac2d0f5dd473ad81119c52d822b9f10235c246e597224ef45907a18a3c3 -->
+<!-- en-source: ios/SDKDemo/README.md sha256:026c06a883369e20645533879e177d11292c962cfeef810d5ed9637ac5cbeb11 -->
 # NayutalGuard SDK — iOS デモ
 
 English: [README.md](README.md)
@@ -40,7 +40,7 @@ shasum -a 256 NayutalSDK-1.7.0.xcframework.zip
 `NayutalSDK-1.7.0.xcframework.zip` の期待値:
 
 ```text
-[sha256]
+b76c17d9d4667b089520643212eb9cacfc50bff0055bd0ed42b88a4b6d78053c
 ```
 
 一致しない場合は作業を止めて、私たちにご連絡ください。その成果物に対してビルドしないでください。

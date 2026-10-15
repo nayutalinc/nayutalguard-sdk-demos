@@ -23,8 +23,8 @@ received against the published hashes before embedding; the values for 1.7.0 are
 
 | Artifact | SHA-256 |
 |---|---|
-| `nayutal-sdk-1.7.0.aar` | `[sha256]` |
-| `NayutalSDK-1.7.0.xcframework.zip` | `[sha256]` |
+| `nayutal-sdk-1.7.0.aar` | `d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672` |
+| `NayutalSDK-1.7.0.xcframework.zip` | `b76c17d9d4667b089520643212eb9cacfc50bff0055bd0ed42b88a4b6d78053c` |
 
 ```bash
 shasum -a 256 nayutal-sdk-1.7.0.aar NayutalSDK-1.7.0.xcframework.zip
