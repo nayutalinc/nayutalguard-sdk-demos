@@ -7,25 +7,27 @@ a single screen — a scan button and streaming results — showing the complete
 integration story: embed the artifact, inject credentials at build time, run a
 scan, consume the event stream.
 
-Both demos build against **SDK 1.4.2** and print results in **schema 1.4.0**.
+Both demos build against **SDK 1.7.0** and print results in **schema 1.7.0**.
+
+They also show how a host uses the current API: init failure, feed state, could-not-measure reasons and observations.
 
 | Demo | Platform | Consumes |
 |---|---|---|
-| [`android/demo`](android/demo/) | Android (Kotlin) | `nayutal-sdk-1.4.2.aar` in `libs/` |
+| [`android/demo`](android/demo/) | Android (Kotlin) | `nayutal-sdk-1.7.0.aar` in `libs/` |
 | [`ios/SDKDemo`](ios/SDKDemo/) | iOS (Swift, XcodeGen) | `NayutalSDK.xcframework` in `Frameworks/` |
 
 ## The artifacts
 
 The SDK package is delivered to integrators by Nayutal. Verify the artifact you
-received against the published hashes before embedding; the values for 1.4.2 are:
+received against the published hashes before embedding; the values for 1.7.0 are:
 
 | Artifact | SHA-256 |
 |---|---|
-| `nayutal-sdk-1.4.2.aar` | `e4e9c04972ff7d5dec71d84530ca318e6f7198899972fabce51c37fd9545a232` |
-| `NayutalSDK-1.4.2.xcframework.zip` | `8c9d0321fd825c1e58d5304e3c67946058f6c4a3108f84dc1123052c5a23edbc` |
+| `nayutal-sdk-1.7.0.aar` | `d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672` |
+| `NayutalSDK-1.7.0.xcframework.zip` | `b76c17d9d4667b089520643212eb9cacfc50bff0055bd0ed42b88a4b6d78053c` |
 
 ```bash
-shasum -a 256 nayutal-sdk-1.4.2.aar NayutalSDK-1.4.2.xcframework.zip
+shasum -a 256 nayutal-sdk-1.7.0.aar NayutalSDK-1.7.0.xcframework.zip
 ```
 
 The same table for every release is published at

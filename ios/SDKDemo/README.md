@@ -19,14 +19,14 @@ there is no stale `.pbxproj` to merge.
 
 ## 1. Get the SDK artifact
 
-`NayutalSDK-1.4.2.xcframework.zip` comes from one of two places, and the bytes are the same:
+`NayutalSDK-1.7.0.xcframework.zip` comes from one of two places, and the bytes are the same:
 
 - the SDK package Nayutal handed you with your integration (the usual path), or
-- the assets of the **sdk-v1.4.2** GitHub release, if your integration includes
+- the assets of the **sdk-v1.7.0** GitHub release, if your integration includes
   access to the `nayutalguard` repository (the page is not public):
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.4.2
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.0
 ```
 
 Either way, verify the file against the published hash table in step 2 before
@@ -38,13 +38,13 @@ The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
 ```bash
-shasum -a 256 NayutalSDK-1.4.2.xcframework.zip
+shasum -a 256 NayutalSDK-1.7.0.xcframework.zip
 ```
 
-Expected for `NayutalSDK-1.4.2.xcframework.zip`:
+Expected for `NayutalSDK-1.7.0.xcframework.zip`:
 
 ```text
-8c9d0321fd825c1e58d5304e3c67946058f6c4a3108f84dc1123052c5a23edbc
+b76c17d9d4667b089520643212eb9cacfc50bff0055bd0ed42b88a4b6d78053c
 ```
 
 If it does not match, stop and tell us. Do not build against it.
@@ -53,7 +53,7 @@ If it does not match, stop and tell us. Do not build against it.
 
 ```bash
 mkdir -p Frameworks
-unzip NayutalSDK-1.4.2.xcframework.zip -d Frameworks/
+unzip NayutalSDK-1.7.0.xcframework.zip -d Frameworks/
 ```
 
 You should end up with `Frameworks/NayutalSDK.xcframework`. That path is
@@ -103,9 +103,11 @@ xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
 ```
 
 Tap **Run Scan**. The result block starts with the schema the SDK returned —
-`schema 1.4.0` for this release — followed by one section per mechanism. On iOS
+`schema 1.7.0` for this release — followed by one section per mechanism. On iOS
 the trust-store check (D7) reports `SKIPPED`: the platform provides no
 trust-store enumeration, and the SDK says so rather than guessing.
+
+The demo also shows the host side of the current API: a missing key surfaces as `NayutalConfigurationError` and no scan runs, `feeds` reports each feed's state, findings that did not measure show their status and reason (a D2 check held behind a sign-in page reports `captive_portal`), `observations` such as `weak_key:<host>` are printed without changing any severity, and a host `SDKActiveVpnProbe` implements `vpnReading()` so a read that fails answers `.unknown`, never `.noVpn`.
 
 ## Signing
 
