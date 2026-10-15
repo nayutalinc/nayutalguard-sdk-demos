@@ -200,13 +200,16 @@ final class ScanModel: ObservableObject {
         case .vpn: return "vpn: a tunnel is active"
         case .noVpn: return "noVpn: the read ran and found no tunnel"
         case .unknown: return "unknown: the read failed or timed out; a VPN cannot be ruled out"
+        @unknown default: return "unknown: a reading this demo does not know; a VPN cannot be ruled out"
         }
     }
 }
 
 /// The host's own VPN read, in the SDK's three-state form (spec §3.5.1). A failed or timed-out read answers
 /// `.unknown`, never `.noVpn`: only a measured "no VPN" may soften a network-context finding. Implementing
-/// `vpnReading()` is all a host does; `isVpnActive()` is the older Bool form.
+/// `vpnReading()` is all a host does; `isVpnActive()` is the older Bool form. The scanner takes its own VPN read
+/// inside a scan; a host passes a probe like this one to `NetworkContextAnalyzer` when it runs the analyzer itself.
+/// Here it is shown after the scan, for display only.
 struct DemoVpnProbe: SDKActiveVpnProbe {
     func isVpnActive() async -> Bool { await vpnReading() == .vpn }
 
@@ -214,22 +217,36 @@ struct DemoVpnProbe: SDKActiveVpnProbe {
         await withCheckedContinuation { continuation in
             let monitor = NWPathMonitor()
             let queue = DispatchQueue(label: "demo.vpn.read")
-            let lock = NSLock()
-            var done = false
-            func finish(_ reading: SDKVpnReading) {
-                lock.lock(); defer { lock.unlock() }
-                guard !done else { return }
-                done = true
-                monitor.cancel()
-                continuation.resume(returning: reading)
-            }
+            let once = OnceResume(continuation, monitor)
             monitor.pathUpdateHandler = { path in
                 // Heuristic for a demo: a tunnel usually shows as an "other" interface; no path yet means no reading.
-                guard path.status != .requiresConnection else { return finish(.unknown) }
-                finish(path.usesInterfaceType(.other) ? .vpn : .noVpn)
+                // Only a satisfied path is a measurement; offline or pending says nothing about a tunnel.
+                guard path.status == .satisfied else { return once.finish(.unknown) }
+                once.finish(path.usesInterfaceType(.other) ? .vpn : .noVpn)
             }
             monitor.start(queue: queue)
-            queue.asyncAfter(deadline: .now() + 2) { finish(.unknown) }
+            queue.asyncAfter(deadline: .now() + 2) { once.finish(.unknown) }
         }
+    }
+}
+
+/// Resumes the continuation exactly once, from whichever of the path update or the timeout comes first.
+private final class OnceResume: @unchecked Sendable {
+    private let lock = NSLock()
+    private var done = false
+    private let continuation: CheckedContinuation<SDKVpnReading, Never>
+    private let monitor: NWPathMonitor
+
+    init(_ continuation: CheckedContinuation<SDKVpnReading, Never>, _ monitor: NWPathMonitor) {
+        self.continuation = continuation
+        self.monitor = monitor
+    }
+
+    func finish(_ reading: SDKVpnReading) {
+        lock.lock(); defer { lock.unlock() }
+        guard !done else { return }
+        done = true
+        monitor.cancel()
+        continuation.resume(returning: reading)
     }
 }
