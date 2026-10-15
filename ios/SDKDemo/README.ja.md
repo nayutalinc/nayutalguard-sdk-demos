@@ -1,4 +1,4 @@
-<!-- en-source: ios/SDKDemo/README.md sha256:828a1b3e9fc188afeb48f36fb0dda145c4cf8a6ba680d890ba55b365223a239c -->
+<!-- en-source: ios/SDKDemo/README.md sha256:e19b7ac2d0f5dd473ad81119c52d822b9f10235c246e597224ef45907a18a3c3 -->
 # NayutalGuard SDK — iOS デモ
 
 English: [README.md](README.md)
@@ -18,13 +18,13 @@ Xcode プロジェクトはコミットせず、`project.yml` から生成しま
 
 ## 1. SDK の成果物を入手する
 
-`NayutalSDK-1.4.2.xcframework.zip` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
+`NayutalSDK-1.7.0.xcframework.zip` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
 
 - 組み込みの際に Nayutal からお渡しした SDK パッケージ（通常はこちらです）
-- **sdk-v1.4.2** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
+- **sdk-v1.7.0** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.4.2
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.0
 ```
 
 いずれの場合も、組み込む前に手順 2 で公開されているハッシュ値の一覧表と照合してください。
@@ -34,13 +34,13 @@ https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.4.2
 リリースノートには成果物ごとに SHA-256 を掲載しています。ダウンロードしたファイルをそのページの値と照合してください。
 
 ```bash
-shasum -a 256 NayutalSDK-1.4.2.xcframework.zip
+shasum -a 256 NayutalSDK-1.7.0.xcframework.zip
 ```
 
-`NayutalSDK-1.4.2.xcframework.zip` の期待値:
+`NayutalSDK-1.7.0.xcframework.zip` の期待値:
 
 ```text
-8c9d0321fd825c1e58d5304e3c67946058f6c4a3108f84dc1123052c5a23edbc
+[sha256]
 ```
 
 一致しない場合は作業を止めて、私たちにご連絡ください。その成果物に対してビルドしないでください。
@@ -49,7 +49,7 @@ shasum -a 256 NayutalSDK-1.4.2.xcframework.zip
 
 ```bash
 mkdir -p Frameworks
-unzip NayutalSDK-1.4.2.xcframework.zip -d Frameworks/
+unzip NayutalSDK-1.7.0.xcframework.zip -d Frameworks/
 ```
 
 `Frameworks/NayutalSDK.xcframework` ができていれば完了です。このパスは意図的に gitignore しています。成果物はダウンロードして検証するものであり、コミットするものではありません。
@@ -93,7 +93,9 @@ xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
   -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
-**Run Scan** をタップしてください。結果ブロックの先頭には SDK が返したスキーマ（このリリースでは `schema 1.4.0`）が表示され、その後に検出機構ごとのセクションが続きます。iOS では証明書ストアの確認（D7）が `SKIPPED` と表示されます。プラットフォームが証明書ストアの列挙手段を提供していないためで、SDK は推測せずにその旨を報告します。
+**Run Scan** をタップしてください。結果ブロックの先頭には SDK が返したスキーマ（このリリースでは `schema 1.7.0`）が表示され、その後に検出機構ごとのセクションが続きます。iOS では証明書ストアの確認（D7）が `SKIPPED` と表示されます。プラットフォームが証明書ストアの列挙手段を提供していないためで、SDK は推測せずにその旨を報告します。
+
+デモは現行 API のホスト側の使い方も示します。キーがない場合は `NayutalConfigurationError` として通知されてスキャンは実行されません。`feeds` は各フィードの状態を報告します。測定できなかった検出は状態と理由を表示します（サインインページの背後で保留された D2 は `captive_portal` を報告します）。`weak_key:<host>` のような `observations` は、深刻度を変えずにそのまま表示します。ホストの `SDKActiveVpnProbe` は `vpnReading()` を実装し、読み取りに失敗した場合は `.noVpn` ではなく `.unknown` を返します。
 
 ## 署名
 

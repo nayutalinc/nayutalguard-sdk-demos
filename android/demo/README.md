@@ -20,14 +20,14 @@ Gradle itself is vendored — use the included `./gradlew`, no separate install.
 
 ## 1. Get the SDK artifact
 
-`nayutal-sdk-1.4.2.aar` comes from one of two places, and the bytes are the same:
+`nayutal-sdk-1.7.0.aar` comes from one of two places, and the bytes are the same:
 
 - the SDK package Nayutal handed you with your integration (the usual path), or
-- the assets of the **sdk-v1.4.2** GitHub release, if your integration includes
+- the assets of the **sdk-v1.7.0** GitHub release, if your integration includes
   access to the `nayutalguard` repository (the page is not public):
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.4.2
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.0
 ```
 
 Either way, verify the file against the published hash table in step 2 before
@@ -39,13 +39,13 @@ The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
 ```bash
-shasum -a 256 nayutal-sdk-1.4.2.aar
+shasum -a 256 nayutal-sdk-1.7.0.aar
 ```
 
-Expected for `nayutal-sdk-1.4.2.aar`:
+Expected for `nayutal-sdk-1.7.0.aar`:
 
 ```text
-e4e9c04972ff7d5dec71d84530ca318e6f7198899972fabce51c37fd9545a232
+[sha256]
 ```
 
 If it does not match, stop and tell us. Do not build against it.
@@ -54,7 +54,7 @@ If it does not match, stop and tell us. Do not build against it.
 
 ```bash
 mkdir -p libs
-cp /path/to/nayutal-sdk-1.4.2.aar libs/
+cp /path/to/nayutal-sdk-1.7.0.aar libs/
 ```
 
 `libs/*.aar` is gitignored on purpose: the artifact is downloaded and verified,
@@ -95,7 +95,9 @@ adb shell am start -n com.nayutal.sdkdemo/.MainActivity
 ```
 
 Tap **Run Scan**. The result block starts with the schema the SDK returned —
-`schema 1.4.0` for this release — followed by one section per mechanism.
+`schema 1.7.0` for this release — followed by one section per mechanism.
+
+The demo also shows the host side of the current API: a missing key surfaces as `NayutalConfigurationException` and no scan runs, `feeds` reports each feed's state, findings that did not measure show their status and reason (a D2 check held behind a sign-in page reports `captive_portal`), and `observations` such as `weak_key:<host>` are printed without changing any severity.
 
 ## Upgrading the SDK
 
