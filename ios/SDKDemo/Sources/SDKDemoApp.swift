@@ -57,16 +57,31 @@ final class ScanModel: ObservableObject {
 
     // The ENTIRE integration surface: endpoint + this integration's key.
     // Both arrive via Secrets.xcconfig -> Info.plist at build time,
-    // never from source.
-    private lazy var scanner: NayutalScanner = {
+    // never from source. A missing or blank key is a configuration error:
+    // make(config:) throws it at startup, and this host shows it instead of
+    // scanning (spec §6.2 - never a silent fallback, never "protected").
+    private lazy var built: Result<NayutalScanner, Error> = {
         let info = Bundle.main.infoDictionary ?? [:]
-        return NayutalScanner.create(config: NayutalSdkConfig(
-            baseUrl: info["NayutalBaseUrl"] as? String ?? "",
-            apiKey: info["NayutalApiKey"] as? String ?? ""
-        ))
+        return Result {
+            try NayutalScanner.make(config: NayutalSdkConfig(
+                baseUrl: info["NayutalBaseUrl"] as? String ?? "",
+                apiKey: info["NayutalApiKey"] as? String ?? ""
+            ))
+        }
     }()
 
     func runScan() {
+        let scanner: NayutalScanner
+        switch built {
+        case .success(let s):
+            scanner = s
+        case .failure(NayutalConfigurationError.apiKeyMissingOrEmpty):
+            output = "SDK init failed: API key missing or empty.\nSet NayutalApiKey in Secrets.xcconfig; no scan runs without it."
+            return
+        case .failure(let error):
+            output = "SDK init failed: \(error)"
+            return
+        }
         scanning = true
         output = ""
         Task {
@@ -86,6 +101,8 @@ final class ScanModel: ObservableObject {
                     progress += "\(f.mechanism.rawValue) done: raw=\(f.rawSeverity) adjusted=\(f.adjustedSeverity) [\(f.status.rawValue)]\n"
                 case .scanCompleted(let result):
                     progress += "\n" + Self.render(result)
+                    progress += "\n-- vpn reading (host probe) --\n"
+                    progress += Self.describe(await DemoVpnProbe().vpnReading()) + "\n"
                 }
                 output = progress
             }
@@ -134,6 +151,15 @@ final class ScanModel: ObservableObject {
         if !r.incompleteChecks.isEmpty {
             s += "did not measure: \(r.incompleteChecks.map { $0.rawValue }.joined(separator: ", "))\n"
         }
+        // feedState per self-fetched feed: LIVE (fetched by this process), FALLBACK (built-in or earlier
+        // data, with its age), HOST_SUPPLIED (an override source), UNCONFIGURED (keyless result).
+        s += "\n-- feeds --\n"
+        for (name, status) in [("certificatePins", r.feeds.certificatePins), ("captivePortals", r.feeds.captivePortals)] {
+            guard let status else { continue }
+            s += "\(name): \(status.state.rawValue)"
+            if let age = status.builtInDataAgeSeconds { s += " (data age \(age) s)" }
+            s += "\n"
+        }
         s += "\n-- network --\n"
         s += "\(r.networkContext.type.rawValue)  ssid=\(r.networkContext.ssid ?? "n/a")\n"
         s += "portal=\(r.networkContext.captivePortal) safeProxy=\(r.networkContext.knownSafeProxy) multiplier=\(r.networkContext.riskMultiplier)\n"
@@ -148,10 +174,61 @@ final class ScanModel: ObservableObject {
                     for code in t.codes.prefix(3) { s += "      \(code)\n" }
                 }
                 if f.threats.isEmpty { s += "  no threats\n" }
+                // D3 only: a service this device does not trust but whose pinned certificate completed
+                // the handshake. Measured valid, not a threat; shown as information.
+                for u in f.trustChainUnverifiedByDevice ?? [] {
+                    s += "  note: \(u.domain) chain not trusted by this device (anchor \(u.anchorSubject)); pinned certificate matched\n"
+                }
             } else {
-                s += "\(f.status.rawValue): \(f.statusReason ?? "-")\n"
+                // Not measured is never "safe": show the status and the machine-readable reason. A D2 check
+                // held behind a captive-portal sign-in page reports reason captive_portal; it is neither a
+                // threat nor a pass, and it runs once the sign-in completes.
+                s += "\(f.status.rawValue): \(f.statusReason ?? "-")"
+                if f.statusReason == "captive_portal" { s += " (held behind a sign-in page; not a threat, not a pass)" }
+                s += "\n"
             }
+            // Non-threat observations (for example weak_key:<host>): a host copies them into its own report;
+            // they never change a severity.
+            for o in f.observations { s += "  observation: \(o)\n" }
         }
         return s
+    }
+
+    static func describe(_ reading: SDKVpnReading) -> String {
+        switch reading {
+        case .vpn: return "vpn: a tunnel is active"
+        case .noVpn: return "noVpn: the read ran and found no tunnel"
+        case .unknown: return "unknown: the read failed or timed out; a VPN cannot be ruled out"
+        }
+    }
+}
+
+/// The host's own VPN read, in the SDK's three-state form (spec §3.5.1). A failed or timed-out read answers
+/// `.unknown`, never `.noVpn`: only a measured "no VPN" may soften a network-context finding. Implementing
+/// `vpnReading()` is all a host does; `isVpnActive()` is the older Bool form.
+struct DemoVpnProbe: SDKActiveVpnProbe {
+    func isVpnActive() async -> Bool { await vpnReading() == .vpn }
+
+    func vpnReading() async -> SDKVpnReading {
+        await withCheckedContinuation { continuation in
+            let monitor = NWPathMonitor()
+            let queue = DispatchQueue(label: "demo.vpn.read")
+            let lock = NSLock()
+            var done = false
+            func finish(_ reading: SDKVpnReading) {
+                lock.lock(); defer { lock.unlock() }
+                guard !done else { return }
+                done = true
+                monitor.cancel()
+                continuation.resume(returning: reading)
+            }
+            monitor.pathUpdateHandler = { path in
+                // Heuristic for a demo: a tunnel usually shows as an "other" interface; no path yet means no reading.
+                guard path.status != .requiresConnection else { return finish(.unknown) }
+                finish(path.usesInterfaceType(.other) ? .vpn : .noVpn)
+            }
+            monitor.start(queue: queue)
+            queue.asyncAfter(deadline: .now() + 2) { finish(.unknown) }
+        }
     }
 }

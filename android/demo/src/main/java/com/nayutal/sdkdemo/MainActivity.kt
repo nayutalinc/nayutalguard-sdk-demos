@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import com.nayutal.sdk.DeviceInfo
+import com.nayutal.sdk.NayutalConfigurationException
 import com.nayutal.sdk.NayutalScanner
 import com.nayutal.sdk.NayutalSdkConfig
 import com.nayutal.sdk.api.FindingStatus
@@ -38,15 +39,19 @@ class MainActivity : Activity() {
     private lateinit var scanButton: Button
 
     // The ENTIRE integration surface: endpoint + this integration's key.
-    // Key injected at build time (-PNAYUTAL_API_KEY), never in source.
-    private val scanner by lazy {
-        NayutalScanner.create(
-            applicationContext,
-            NayutalSdkConfig(
-                baseUrl = BuildConfig.BASE_URL,
-                apiKey = BuildConfig.NAYUTAL_API_KEY
+    // Key injected at build time (-PNAYUTAL_API_KEY), never in source. A missing or blank key is a
+    // configuration error: create() throws it at startup, and this host shows it instead of scanning
+    // (spec 6.2 - never a silent fallback, never "protected").
+    private val built: Result<NayutalScanner> by lazy {
+        runCatching {
+            NayutalScanner.create(
+                applicationContext,
+                NayutalSdkConfig(
+                    baseUrl = BuildConfig.BASE_URL,
+                    apiKey = BuildConfig.NAYUTAL_API_KEY
+                )
             )
-        )
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +78,14 @@ class MainActivity : Activity() {
     }
 
     private fun runScan() {
+        val scanner = built.getOrElse { e ->
+            output.text = if (e is NayutalConfigurationException) {
+                "SDK init failed: API key missing or empty.\nBuild with -PNAYUTAL_API_KEY=...; no scan runs without it."
+            } else {
+                "SDK init failed: ${e.javaClass.simpleName}: ${e.message}"
+            }
+            return
+        }
         scanButton.isEnabled = false
         val progress = StringBuilder()
         output.text = "Scanning…"
@@ -141,6 +154,16 @@ class MainActivity : Activity() {
         if (r.incompleteChecks.isNotEmpty()) {
             appendLine("did not measure: ${r.incompleteChecks.joinToString()}")
         }
+        // feedState per self-fetched feed: LIVE (fetched by this process), FALLBACK (built-in or earlier
+        // data, with its age), HOST_SUPPLIED (an override source).
+        appendLine()
+        appendLine("-- feeds --")
+        listOf("certificatePins" to r.feeds.certificatePins, "captivePortals" to r.feeds.captivePortals,
+            "vpnBlocklist" to r.feeds.vpnBlocklist).forEach { (name, status) ->
+            if (status != null) {
+                appendLine("$name: ${status.state}" + (status.builtInDataAgeSeconds?.let { " (data age $it s)" } ?: ""))
+            }
+        }
         appendLine()
         appendLine("-- network --")
         appendLine("${r.networkContext.type}  ssid=${r.networkContext.ssid ?: "n/a"}")
@@ -158,9 +181,21 @@ class MainActivity : Activity() {
                         t.codes.take(3).forEach { appendLine("      $it") }
                     }
                     if (f.threats.isEmpty()) appendLine("  no threats")
+                    // D3 only: a service this device does not trust but whose pinned certificate completed
+                    // the handshake. Measured valid, not a threat; shown as information.
+                    f.trustChainUnverifiedByDevice?.forEach {
+                        appendLine("  note: ${it.domain} chain not trusted by this device (anchor ${it.anchorSubject}); pinned certificate matched")
+                    }
                 }
-                else -> appendLine("${f.status}: ${f.statusReason}")
+                // Not measured is never "safe": show the status and the machine-readable reason. A D2 check
+                // held behind a captive-portal sign-in page reports reason captive_portal; it is neither a
+                // threat nor a pass, and it runs once the sign-in completes.
+                else -> appendLine("${f.status}: ${f.statusReason}" +
+                    if (f.statusReason == "captive_portal") " (held behind a sign-in page; not a threat, not a pass)" else "")
             }
+            // Non-threat observations (for example weak_key:<host>): a host copies them into its own report;
+            // they never change a severity.
+            f.observations.forEach { appendLine("  observation: $it") }
         }
     }
 
