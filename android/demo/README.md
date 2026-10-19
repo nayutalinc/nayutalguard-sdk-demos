@@ -20,14 +20,14 @@ Gradle itself is vendored — use the included `./gradlew`, no separate install.
 
 ## 1. Get the SDK artifact
 
-`nayutal-sdk-1.7.0.aar` comes from one of two places, and the bytes are the same:
+`nayutal-sdk-1.7.1.aar` comes from one of two places, and the bytes are the same:
 
 - the SDK package Nayutal handed you with your integration (the usual path), or
-- the assets of the **sdk-v1.7.0** GitHub release, if your integration includes
+- the assets of the **sdk-v1.7.1** GitHub release, if your integration includes
   access to the `nayutalguard` repository (the page is not public):
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.0
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
 ```
 
 Either way, verify the file against the published hash table in step 2 before
@@ -39,13 +39,13 @@ The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
 ```bash
-shasum -a 256 nayutal-sdk-1.7.0.aar
+shasum -a 256 nayutal-sdk-1.7.1.aar
 ```
 
-Expected for `nayutal-sdk-1.7.0.aar`:
+Expected for `nayutal-sdk-1.7.1.aar`:
 
 ```text
-d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672
+44b99068afeadc08bca1f3f532dbdf401950c674b2cf550394d5b6b25482edf8
 ```
 
 If it does not match, stop and tell us. Do not build against it.
@@ -54,7 +54,7 @@ If it does not match, stop and tell us. Do not build against it.
 
 ```bash
 mkdir -p libs
-cp /path/to/nayutal-sdk-1.7.0.aar libs/
+cp /path/to/nayutal-sdk-1.7.1.aar libs/
 ```
 
 `libs/*.aar` is gitignored on purpose: the artifact is downloaded and verified,

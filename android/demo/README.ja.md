@@ -1,4 +1,4 @@
-<!-- en-source: android/demo/README.md sha256:9c66f00e4f9962251627633e4f4d61c200d29ed44816e8e3da7f730ea507b59f -->
+<!-- en-source: android/demo/README.md sha256:dccda6c038035a4da12308013e51aef56350ba3fae8948b4d2b1b2bde3d6a11a -->
 # NayutalGuard SDK — Android デモ
 
 English: [README.md](README.md)
@@ -19,13 +19,13 @@ Gradle 本体は同梱しています。付属の `./gradlew` を使ってくだ
 
 ## 1. SDK の成果物を入手する
 
-`nayutal-sdk-1.7.0.aar` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
+`nayutal-sdk-1.7.1.aar` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
 
 - 組み込みの際に Nayutal からお渡しした SDK パッケージ（通常はこちらです）
-- **sdk-v1.7.0** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
+- **sdk-v1.7.1** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.0
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
 ```
 
 いずれの場合も、組み込む前に手順 2 で公開されているハッシュ値の一覧表と照合してください。
@@ -35,13 +35,13 @@ https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.0
 リリースノートには成果物ごとに SHA-256 を掲載しています。ダウンロードしたファイルをそのページの値と照合してください。
 
 ```bash
-shasum -a 256 nayutal-sdk-1.7.0.aar
+shasum -a 256 nayutal-sdk-1.7.1.aar
 ```
 
-`nayutal-sdk-1.7.0.aar` の期待値:
+`nayutal-sdk-1.7.1.aar` の期待値:
 
 ```text
-d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672
+44b99068afeadc08bca1f3f532dbdf401950c674b2cf550394d5b6b25482edf8
 ```
 
 一致しない場合は作業を止めて、私たちにご連絡ください。その成果物に対してビルドしないでください。
@@ -50,7 +50,7 @@ d61b1d5f2a84406edf523703989bcc7e8714f8303cec57243cf16fdf2803e672
 
 ```bash
 mkdir -p libs
-cp /path/to/nayutal-sdk-1.7.0.aar libs/
+cp /path/to/nayutal-sdk-1.7.1.aar libs/
 ```
 
 `libs/*.aar` は意図的に gitignore しています。成果物はダウンロードして検証するものであり、コミットするものではありません。
