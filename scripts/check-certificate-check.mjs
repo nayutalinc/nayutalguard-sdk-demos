@@ -36,10 +36,13 @@ import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-// String literals are emptied first, so a "/*" or "//" inside one (an Accept header such as
-// "text/*", a URL) never starts a comment that hides real code; then comments are removed.
+// Character literals, then string literals, are emptied first, so a "/*" or "//" inside a string
+// (an Accept header such as "text/*", a URL) never starts a comment that hides real code, and a
+// quote character ('"') never opens a string that hides the rest of its line; then comments are
+// removed.
 function stripComments(source) {
-  return source.replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+  return source.replace(/'(?:[^'\\\n]|\\(?:u[0-9a-fA-F]{4}|.))'/g, "''")
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n');
 }
@@ -133,6 +136,9 @@ function selftest() {
     'NayutalSdkConfig(u, null, k, null, null, null, null, logger, null, BuildConfig.CC)',
     'new NayutalSdkConfig(u, null, k, null, null, null, null, logger, null, Boolean.FALSE, null);',
     'val h = "text/*"\nval c = NayutalSdkConfig(baseUrl = u, apiKey = k, certificateCheck = false)\n/* x */',
+    // A quote character must not open a string that hides the call on its line.
+    'val q = \'"\'; val c = NayutalSdkConfig(baseUrl = u, apiKey = k, certificateCheck = false); val r = "x"',
+    'val q = \'\\\'\'; val e = \'\\u0022\'; val c = NayutalSdkConfig(u, null, k, null, null, null, null, logger, null, false)',
   ]) expect(offendingKotlin(planted).length > 0, `Kotlin planted form passed: ${JSON.stringify(planted)}`);
   for (const clean of [
     'NayutalSdkConfig(baseUrl = u, apiKey = k, certificateCheck = true)',
