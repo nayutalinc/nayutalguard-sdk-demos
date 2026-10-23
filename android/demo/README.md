@@ -20,14 +20,14 @@ Gradle itself is vendored — use the included `./gradlew`, no separate install.
 
 ## 1. Get the SDK artifact
 
-`nayutal-sdk-1.7.1.aar` comes from one of two places, and the bytes are the same:
+`nayutal-sdk-1.8.0.aar` comes from one of two places, and the bytes are the same:
 
 - the SDK package Nayutal handed you with your integration (the usual path), or
-- the assets of the **sdk-v1.7.1** GitHub release, if your integration includes
+- the assets of the **sdk-v1.8.0** GitHub release, if your integration includes
   access to the `nayutalguard` repository (the page is not public):
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.8.0
 ```
 
 Either way, verify the file against the published hash table in step 2 before
@@ -39,13 +39,13 @@ The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
 ```bash
-shasum -a 256 nayutal-sdk-1.7.1.aar
+shasum -a 256 nayutal-sdk-1.8.0.aar
 ```
 
-Expected for `nayutal-sdk-1.7.1.aar`:
+Expected for `nayutal-sdk-1.8.0.aar`:
 
 ```text
-44b99068afeadc08bca1f3f532dbdf401950c674b2cf550394d5b6b25482edf8
+a36f134a3742ecd4292e711063d246a470e9365e86b9e00007fffc1dfbcb0453
 ```
 
 If it does not match, stop and tell us. Do not build against it.
@@ -54,7 +54,7 @@ If it does not match, stop and tell us. Do not build against it.
 
 ```bash
 mkdir -p libs
-cp /path/to/nayutal-sdk-1.7.1.aar libs/
+cp /path/to/nayutal-sdk-1.8.0.aar libs/
 ```
 
 `libs/*.aar` is gitignored on purpose: the artifact is downloaded and verified,
@@ -95,9 +95,17 @@ adb shell am start -n com.nayutal.sdkdemo/.MainActivity
 ```
 
 Tap **Run Scan**. The result block starts with the schema the SDK returned —
-`schema 1.7.0` for this release — followed by one section per mechanism.
+`schema 1.8.0` for this release — followed by one section per mechanism.
 
 The demo also shows the host side of the current API: a missing key surfaces as `NayutalConfigurationException` and no scan runs, `feeds` reports each feed's state, findings that did not measure show their status and reason (a D2 check held behind a sign-in page reports `captive_portal`), and `observations` such as `weak_key:<host>` are printed without changing any severity.
+
+Its SDK configuration, in `DemoSdkConfig.kt`, also writes out the three optional fields added in 1.8.0: `dnsBaseline` at the SDK's built-in values, `certificateCheck` left on, and a `requestHeaders` provider that adds one fixed test header, `X-Demo-Client`, to the SDK's calls to the base URL and the feed URL. The network section prints the DNS baseline each scan used. Naming a baseline differs from leaving the field unset in one way: a named server that is the phone's own DNS server is not queried in that scan.
+
+The demo never turns the certificate check off. Its unit test asserts that, and CI rejects any demo source that passes `certificateCheck` anything but `true` (`scripts/check-certificate-check.mjs`):
+
+```bash
+./gradlew testDebugUnitTest
+```
 
 ## Upgrading the SDK
 

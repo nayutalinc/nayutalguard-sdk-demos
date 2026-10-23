@@ -7,27 +7,27 @@ a single screen — a scan button and streaming results — showing the complete
 integration story: embed the artifact, inject credentials at build time, run a
 scan, consume the event stream.
 
-Both demos build against **SDK 1.7.1** and print results in **schema 1.7.0**.
+Both demos build against **SDK 1.8.0** and print results in **schema 1.8.0**.
 
-They also show how a host uses the current API: init failure, feed state, could-not-measure reasons and observations.
+They also show how a host uses the current API: init failure, feed state, could-not-measure reasons, observations, and the optional configuration fields added in 1.8.0 (a DNS baseline, the certificate check left on, a request-header provider).
 
 | Demo | Platform | Consumes |
 |---|---|---|
-| [`android/demo`](android/demo/) | Android (Kotlin) | `nayutal-sdk-1.7.1.aar` in `libs/` |
+| [`android/demo`](android/demo/) | Android (Kotlin) | `nayutal-sdk-1.8.0.aar` in `libs/` |
 | [`ios/SDKDemo`](ios/SDKDemo/) | iOS (Swift, XcodeGen) | `NayutalSDK.xcframework` in `Frameworks/` |
 
 ## The artifacts
 
 The SDK package is delivered to integrators by Nayutal. Verify the artifact you
-received against the published hashes before embedding; the values for 1.7.1 are:
+received against the published hashes before embedding; the values for 1.8.0 are:
 
 | Artifact | SHA-256 |
 |---|---|
-| `nayutal-sdk-1.7.1.aar` | `44b99068afeadc08bca1f3f532dbdf401950c674b2cf550394d5b6b25482edf8` |
-| `NayutalSDK-1.7.1.xcframework.zip` | `6013a4a22c3e1c57232d998a8bfca8fd9337c79fe1042b9a140f1729edf7d6d9` |
+| `nayutal-sdk-1.8.0.aar` | `a36f134a3742ecd4292e711063d246a470e9365e86b9e00007fffc1dfbcb0453` |
+| `NayutalSDK-1.8.0.xcframework.zip` | `9094427017c014d0c589a49b3bace373ba0c5b84375d76a9b80a10e643f8c833` |
 
 ```bash
-shasum -a 256 nayutal-sdk-1.7.1.aar NayutalSDK-1.7.1.xcframework.zip
+shasum -a 256 nayutal-sdk-1.8.0.aar NayutalSDK-1.8.0.xcframework.zip
 ```
 
 The same table for every release is published at
@@ -45,6 +45,13 @@ credential injection, and run instructions:
 
 Credentials (base URL + API key) are delivered separately and are never
 committed — both demos inject them at build time.
+
+## The certificate check stays on
+
+Neither demo turns the SDK's certificate check off. Each demo's unit test asserts
+that its configuration reads `certificateCheck` true, and on every push and pull
+request `scripts/check-certificate-check.mjs` rejects any demo source that passes
+`certificateCheck` anything but `true`.
 
 ## Keeping the two languages in step
 
