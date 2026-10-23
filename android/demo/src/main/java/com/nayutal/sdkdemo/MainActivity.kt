@@ -16,7 +16,6 @@ import android.widget.TextView
 import com.nayutal.sdk.DeviceInfo
 import com.nayutal.sdk.NayutalConfigurationException
 import com.nayutal.sdk.NayutalScanner
-import com.nayutal.sdk.NayutalSdkConfig
 import com.nayutal.sdk.api.FindingStatus
 import com.nayutal.sdk.api.ScanEvent
 import com.nayutal.sdk.api.SdkScanResult
@@ -38,18 +37,15 @@ class MainActivity : Activity() {
     private lateinit var output: TextView
     private lateinit var scanButton: Button
 
-    // The ENTIRE integration surface: endpoint + this integration's key.
-    // Key injected at build time (-PNAYUTAL_API_KEY), never in source. A missing or blank key is a
-    // configuration error: create() throws it at startup, and this host shows it instead of scanning
-    // (spec 6.2 - never a silent fallback, never "protected").
+    // The integration surface: endpoint + this integration's key, plus the optional fields in DemoSdkConfig.kt.
+    // Key injected at build time (-PNAYUTAL_API_KEY), never in source. A missing or blank key, or a DNS baseline the
+    // SDK refuses, is a configuration error: create() throws it at startup, and this host shows it instead of
+    // scanning (spec 6.2 - never a silent fallback, never "protected").
     private val built: Result<NayutalScanner> by lazy {
         runCatching {
             NayutalScanner.create(
                 applicationContext,
-                NayutalSdkConfig(
-                    baseUrl = BuildConfig.BASE_URL,
-                    apiKey = BuildConfig.NAYUTAL_API_KEY
-                )
+                demoSdkConfig(baseUrl = BuildConfig.BASE_URL, apiKey = BuildConfig.NAYUTAL_API_KEY)
             )
         }
     }
@@ -80,7 +76,8 @@ class MainActivity : Activity() {
     private fun runScan() {
         val scanner = built.getOrElse { e ->
             output.text = if (e is NayutalConfigurationException) {
-                "SDK init failed: API key missing or empty.\nBuild with -PNAYUTAL_API_KEY=...; no scan runs without it."
+                // The message names the rule broken (a missing key, a refused DNS baseline), never the value.
+                "SDK init failed: ${e.message}\nBuild with -PNAYUTAL_API_KEY=...; no scan runs without a key."
             } else {
                 "SDK init failed: ${e.javaClass.simpleName}: ${e.message}"
             }
@@ -156,7 +153,8 @@ class MainActivity : Activity() {
             appendLine("did not measure: ${r.incompleteChecks.joinToString()}")
         }
         // feedState per self-fetched feed: LIVE (fetched by this process), FALLBACK (built-in or earlier
-        // data, with its age), HOST_SUPPLIED (an override source).
+        // data, with its age), HOST_SUPPLIED (an override source), DISABLED (certificate pins only: the host
+        // turned the certificate check off; this demo never does).
         appendLine()
         appendLine("-- feeds --")
         listOf("certificatePins" to r.feeds.certificatePins, "captivePortals" to r.feeds.captivePortals,
@@ -169,6 +167,9 @@ class MainActivity : Activity() {
         appendLine("-- network --")
         appendLine("${r.networkContext.type}  ssid=${r.networkContext.ssid ?: "n/a"}")
         appendLine("portal=${r.networkContext.captivePortal} safeProxy=${r.networkContext.knownSafeProxy} multiplier=${r.networkContext.riskMultiplier}")
+        // The baseline the DNS check compared against on this network (addresses and endpoint only); whether the
+        // check ran is the D2 finding's status, below.
+        r.networkContext.dnsBaseline?.let { appendLine("dns baseline: ${it.udpServers.joinToString()} + ${it.dohEndpoint}") }
         for (f in r.findings) {
             appendLine()
             appendLine("-- ${f.mechanism} --")

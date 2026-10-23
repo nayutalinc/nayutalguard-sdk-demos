@@ -55,15 +55,16 @@ final class ScanModel: ObservableObject {
     """
     @Published var scanning = false
 
-    // The ENTIRE integration surface: endpoint + this integration's key.
-    // Both arrive via Secrets.xcconfig -> Info.plist at build time,
-    // never from source. A missing or blank key is a configuration error:
+    // The integration surface: endpoint + this integration's key, plus the
+    // optional fields in DemoSdkConfig.swift. Both arrive via Secrets.xcconfig
+    // -> Info.plist at build time, never from source. A missing or blank key,
+    // or a DNS baseline the SDK refuses, is a configuration error:
     // make(config:) throws it at startup, and this host shows it instead of
     // scanning (spec §6.2 - never a silent fallback, never "protected").
     private lazy var built: Result<NayutalScanner, Error> = {
         let info = Bundle.main.infoDictionary ?? [:]
         return Result {
-            try NayutalScanner.make(config: NayutalSdkConfig(
+            try NayutalScanner.make(config: DemoSdkConfig.make(
                 baseUrl: info["NayutalBaseUrl"] as? String ?? "",
                 apiKey: info["NayutalApiKey"] as? String ?? ""
             ))
@@ -77,6 +78,10 @@ final class ScanModel: ObservableObject {
             scanner = s
         case .failure(NayutalConfigurationError.apiKeyMissingOrEmpty):
             output = "SDK init failed: API key missing or empty.\nSet NayutalApiKey in Secrets.xcconfig; no scan runs without it."
+            return
+        case .failure(NayutalConfigurationError.dnsBaselineInvalid(let reason)):
+            // The reason names the rule broken, never the value.
+            output = "SDK init failed: \(reason)"
             return
         case .failure(let error):
             output = "SDK init failed: \(error)"
@@ -153,7 +158,8 @@ final class ScanModel: ObservableObject {
             s += "did not measure: \(r.incompleteChecks.map { $0.rawValue }.joined(separator: ", "))\n"
         }
         // feedState per self-fetched feed: LIVE (fetched by this process), FALLBACK (built-in or earlier
-        // data, with its age), HOST_SUPPLIED (an override source), UNCONFIGURED (keyless result).
+        // data, with its age), HOST_SUPPLIED (an override source), UNCONFIGURED (keyless result), DISABLED
+        // (certificate pins only: the host turned the certificate check off; this demo never does).
         s += "\n-- feeds --\n"
         for (name, status) in [("certificatePins", r.feeds.certificatePins), ("captivePortals", r.feeds.captivePortals)] {
             guard let status else { continue }
@@ -164,6 +170,11 @@ final class ScanModel: ObservableObject {
         s += "\n-- network --\n"
         s += "\(r.networkContext.type.rawValue)  ssid=\(r.networkContext.ssid ?? "n/a")\n"
         s += "portal=\(r.networkContext.captivePortal) safeProxy=\(r.networkContext.knownSafeProxy) multiplier=\(r.networkContext.riskMultiplier)\n"
+        // The baseline the DNS check compared against on this network (addresses and endpoint only); whether the
+        // check ran is the D2 finding's status, below.
+        if let b = r.networkContext.dnsBaseline {
+            s += "dns baseline: \(b.udpServers.joined(separator: ", ")) + \(b.dohEndpoint)\n"
+        }
         for f in r.findings {
             s += "\n-- \(f.mechanism.rawValue) --\n"
             if f.status == .measured {

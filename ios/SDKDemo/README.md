@@ -19,14 +19,14 @@ there is no stale `.pbxproj` to merge.
 
 ## 1. Get the SDK artifact
 
-`NayutalSDK-1.7.1.xcframework.zip` comes from one of two places, and the bytes are the same:
+`NayutalSDK-1.8.0.xcframework.zip` comes from one of two places, and the bytes are the same:
 
 - the SDK package Nayutal handed you with your integration (the usual path), or
-- the assets of the **sdk-v1.7.1** GitHub release, if your integration includes
+- the assets of the **sdk-v1.8.0** GitHub release, if your integration includes
   access to the `nayutalguard` repository (the page is not public):
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.8.0
 ```
 
 Either way, verify the file against the published hash table in step 2 before
@@ -38,13 +38,13 @@ The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
 ```bash
-shasum -a 256 NayutalSDK-1.7.1.xcframework.zip
+shasum -a 256 NayutalSDK-1.8.0.xcframework.zip
 ```
 
-Expected for `NayutalSDK-1.7.1.xcframework.zip`:
+Expected for `NayutalSDK-1.8.0.xcframework.zip`:
 
 ```text
-6013a4a22c3e1c57232d998a8bfca8fd9337c79fe1042b9a140f1729edf7d6d9
+9094427017c014d0c589a49b3bace373ba0c5b84375d76a9b80a10e643f8c833
 ```
 
 If it does not match, stop and tell us. Do not build against it.
@@ -53,7 +53,7 @@ If it does not match, stop and tell us. Do not build against it.
 
 ```bash
 mkdir -p Frameworks
-unzip NayutalSDK-1.7.1.xcframework.zip -d Frameworks/
+unzip NayutalSDK-1.8.0.xcframework.zip -d Frameworks/
 ```
 
 You should end up with `Frameworks/NayutalSDK.xcframework`. That path is
@@ -103,11 +103,20 @@ xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
 ```
 
 Tap **Run Scan**. The result block starts with the schema the SDK returned —
-`schema 1.7.0` for this release — followed by one section per mechanism. On iOS
+`schema 1.8.0` for this release — followed by one section per mechanism. On iOS
 the trust-store check (D7) reports `SKIPPED`: the platform provides no
 trust-store enumeration, and the SDK says so rather than guessing.
 
 The demo also shows the host side of the current API: a missing key surfaces as `NayutalConfigurationError` and no scan runs, `feeds` reports each feed's state, findings that did not measure show their status and reason (a D2 check held behind a sign-in page reports `captive_portal`), `observations` such as `weak_key:<host>` are printed without changing any severity, and a host `SDKActiveVpnProbe` implements `vpnReading()` so a read that fails answers `.unknown`, never `.noVpn`.
+
+Its SDK configuration, in `DemoSdkConfig.swift`, also writes out the three optional fields added in 1.8.0: `dnsBaseline` at the SDK's built-in values, `certificateCheck` left on, and a `requestHeaders` provider that adds one fixed test header, `X-Demo-Client`, to the SDK's calls to the base URL. The network section prints the DNS baseline each scan used. Naming a baseline differs from leaving the field unset in one way: a named server that is the phone's own DNS server is not queried in that scan.
+
+The demo never turns the certificate check off. Its unit test (the `SDKDemoTests` target) asserts that, and CI rejects any demo source that passes `certificateCheck` anything but `true` (`scripts/check-certificate-check.mjs`):
+
+```bash
+xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
+  -destination 'platform=iOS Simulator,name=iPhone 17' test
+```
 
 ## Signing
 

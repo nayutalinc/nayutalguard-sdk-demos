@@ -1,4 +1,4 @@
-<!-- en-source: ios/SDKDemo/README.md sha256:75676833e7952e5b26f7e54b273505ae2f537c4af72f1fa5d4716141b90485c5 -->
+<!-- en-source: ios/SDKDemo/README.md sha256:42b8e96c668f298f2f3c91b45864262b3c59fdbe5a19b7fa46abf6796046a963 -->
 # NayutalGuard SDK — iOS デモ
 
 English: [README.md](README.md)
@@ -18,13 +18,13 @@ Xcode プロジェクトはコミットせず、`project.yml` から生成しま
 
 ## 1. SDK の成果物を入手する
 
-`NayutalSDK-1.7.1.xcframework.zip` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
+`NayutalSDK-1.8.0.xcframework.zip` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
 
 - 組み込みの際に Nayutal からお渡しした SDK パッケージ（通常はこちらです）
-- **sdk-v1.7.1** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
+- **sdk-v1.8.0** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.8.0
 ```
 
 いずれの場合も、組み込む前に手順 2 で公開されているハッシュ値の一覧表と照合してください。
@@ -34,13 +34,13 @@ https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
 リリースノートには成果物ごとに SHA-256 を掲載しています。ダウンロードしたファイルをそのページの値と照合してください。
 
 ```bash
-shasum -a 256 NayutalSDK-1.7.1.xcframework.zip
+shasum -a 256 NayutalSDK-1.8.0.xcframework.zip
 ```
 
-`NayutalSDK-1.7.1.xcframework.zip` の期待値:
+`NayutalSDK-1.8.0.xcframework.zip` の期待値:
 
 ```text
-6013a4a22c3e1c57232d998a8bfca8fd9337c79fe1042b9a140f1729edf7d6d9
+9094427017c014d0c589a49b3bace373ba0c5b84375d76a9b80a10e643f8c833
 ```
 
 一致しない場合は作業を止めて、私たちにご連絡ください。その成果物に対してビルドしないでください。
@@ -49,7 +49,7 @@ shasum -a 256 NayutalSDK-1.7.1.xcframework.zip
 
 ```bash
 mkdir -p Frameworks
-unzip NayutalSDK-1.7.1.xcframework.zip -d Frameworks/
+unzip NayutalSDK-1.8.0.xcframework.zip -d Frameworks/
 ```
 
 `Frameworks/NayutalSDK.xcframework` ができていれば完了です。このパスは意図的に gitignore しています。成果物はダウンロードして検証するものであり、コミットするものではありません。
@@ -93,9 +93,18 @@ xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
   -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
-**Run Scan** をタップしてください。結果ブロックの先頭には SDK が返したスキーマ（このリリースでは `schema 1.7.0`）が表示され、その後に検出機構ごとのセクションが続きます。iOS では証明書ストアの確認（D7）が `SKIPPED` と表示されます。プラットフォームが証明書ストアの列挙手段を提供していないためで、SDK は推測せずにその旨を報告します。
+**Run Scan** をタップしてください。結果ブロックの先頭には SDK が返したスキーマ（このリリースでは `schema 1.8.0`）が表示され、その後に検出機構ごとのセクションが続きます。iOS では証明書ストアの確認（D7）が `SKIPPED` と表示されます。プラットフォームが証明書ストアの列挙手段を提供していないためで、SDK は推測せずにその旨を報告します。
 
 デモは現行 API のホスト側の使い方も示します。キーがない場合は `NayutalConfigurationError` として通知されてスキャンは実行されません。`feeds` は各フィードの状態を報告します。測定できなかった検出は状態と理由を表示します（サインインページの背後で保留された D2 は `captive_portal` を報告します）。`weak_key:<host>` のような `observations` は、深刻度を変えずにそのまま表示します。ホストの `SDKActiveVpnProbe` は `vpnReading()` を実装し、読み取りに失敗した場合は `.noVpn` ではなく `.unknown` を返します。
+
+`DemoSdkConfig.swift` の SDK 設定には、1.8.0 で追加された 3 つの任意項目も明示しています。SDK の組み込みの値を指定した `dnsBaseline`、有効のままの `certificateCheck`、そしてベース URL への SDK の呼び出しに固定のテスト用ヘッダー `X-Demo-Client` を 1 つ追加する `requestHeaders` プロバイダーです。ネットワークのセクションには、各スキャンが使った DNS の基準が表示されます。基準を指定すると、項目を指定しない場合と 1 点だけ動作が異なります。指定したサーバーが端末自身の DNS サーバーである場合、そのスキャンではそのサーバーに問い合わせません。
+
+デモが証明書チェックを無効にすることはありません。単体テスト（`SDKDemoTests` ターゲット）がそれを確認し、`certificateCheck` に `true` 以外を渡すデモのソースは CI が拒否します（`scripts/check-certificate-check.mjs`）。
+
+```bash
+xcodebuild -project SDKDemo.xcodeproj -scheme SDKDemo \
+  -destination 'platform=iOS Simulator,name=iPhone 17' test
+```
 
 ## 署名
 

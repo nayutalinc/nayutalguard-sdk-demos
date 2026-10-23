@@ -1,4 +1,4 @@
-<!-- en-source: android/demo/README.md sha256:dccda6c038035a4da12308013e51aef56350ba3fae8948b4d2b1b2bde3d6a11a -->
+<!-- en-source: android/demo/README.md sha256:61346999219e8476d9399db59b82a968bd1642a8a3b870d5558fa47de028309a -->
 # NayutalGuard SDK — Android デモ
 
 English: [README.md](README.md)
@@ -19,13 +19,13 @@ Gradle 本体は同梱しています。付属の `./gradlew` を使ってくだ
 
 ## 1. SDK の成果物を入手する
 
-`nayutal-sdk-1.7.1.aar` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
+`nayutal-sdk-1.8.0.aar` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
 
 - 組み込みの際に Nayutal からお渡しした SDK パッケージ（通常はこちらです）
-- **sdk-v1.7.1** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
+- **sdk-v1.8.0** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.8.0
 ```
 
 いずれの場合も、組み込む前に手順 2 で公開されているハッシュ値の一覧表と照合してください。
@@ -35,13 +35,13 @@ https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.7.1
 リリースノートには成果物ごとに SHA-256 を掲載しています。ダウンロードしたファイルをそのページの値と照合してください。
 
 ```bash
-shasum -a 256 nayutal-sdk-1.7.1.aar
+shasum -a 256 nayutal-sdk-1.8.0.aar
 ```
 
-`nayutal-sdk-1.7.1.aar` の期待値:
+`nayutal-sdk-1.8.0.aar` の期待値:
 
 ```text
-44b99068afeadc08bca1f3f532dbdf401950c674b2cf550394d5b6b25482edf8
+a36f134a3742ecd4292e711063d246a470e9365e86b9e00007fffc1dfbcb0453
 ```
 
 一致しない場合は作業を止めて、私たちにご連絡ください。その成果物に対してビルドしないでください。
@@ -50,7 +50,7 @@ shasum -a 256 nayutal-sdk-1.7.1.aar
 
 ```bash
 mkdir -p libs
-cp /path/to/nayutal-sdk-1.7.1.aar libs/
+cp /path/to/nayutal-sdk-1.8.0.aar libs/
 ```
 
 `libs/*.aar` は意図的に gitignore しています。成果物はダウンロードして検証するものであり、コミットするものではありません。
@@ -88,9 +88,17 @@ NAYUTAL_API_KEY=your-key-here
 adb shell am start -n com.nayutal.sdkdemo/.MainActivity
 ```
 
-**Run Scan** をタップしてください。結果ブロックの先頭には SDK が返したスキーマ（このリリースでは `schema 1.7.0`）が表示され、その後に検出機構ごとのセクションが続きます。
+**Run Scan** をタップしてください。結果ブロックの先頭には SDK が返したスキーマ（このリリースでは `schema 1.8.0`）が表示され、その後に検出機構ごとのセクションが続きます。
 
 デモは現行 API のホスト側の使い方も示します。キーがない場合は `NayutalConfigurationException` として通知されてスキャンは実行されません。`feeds` は各フィードの状態を報告します。測定できなかった検出は状態と理由を表示します（サインインページの背後で保留された D2 は `captive_portal` を報告します）。`weak_key:<host>` のような `observations` は、深刻度を変えずにそのまま表示します。
+
+`DemoSdkConfig.kt` の SDK 設定には、1.8.0 で追加された 3 つの任意項目も明示しています。SDK の組み込みの値を指定した `dnsBaseline`、有効のままの `certificateCheck`、そしてベース URL とフィード URL への SDK の呼び出しに固定のテスト用ヘッダー `X-Demo-Client` を 1 つ追加する `requestHeaders` プロバイダーです。ネットワークのセクションには、各スキャンが使った DNS の基準が表示されます。基準を指定すると、項目を指定しない場合と 1 点だけ動作が異なります。指定したサーバーが端末自身の DNS サーバーである場合、そのスキャンではそのサーバーに問い合わせません。
+
+デモが証明書チェックを無効にすることはありません。単体テストがそれを確認し、`certificateCheck` に `true` 以外を渡すデモのソースは CI が拒否します（`scripts/check-certificate-check.mjs`）。
+
+```bash
+./gradlew testDebugUnitTest
+```
 
 ## SDK を更新する
 
