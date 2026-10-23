@@ -47,10 +47,10 @@ android {
 }
 
 dependencies {
-    // The SHIPPED SDK artifact. Download it from the sdk-v1.7.1 release and
+    // The SHIPPED SDK artifact. Download it from the sdk-v1.8.0 release and
     // drop it in libs/ — see README.md. It is not committed: you are meant to
     // verify its SHA-256 against the release notes before using it.
-    implementation(files("libs/nayutal-sdk-1.7.1.aar"))
+    implementation(files("libs/nayutal-sdk-1.8.0.aar"))
 
     // The SDK's own dependencies, declared explicitly.
     //
@@ -72,4 +72,7 @@ dependencies {
     implementation("androidx.annotation:annotation:1.8.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // The demo's configuration test (src/test): its SDK configuration never turns the certificate check off.
+    testImplementation("junit:junit:4.13.2")
 }

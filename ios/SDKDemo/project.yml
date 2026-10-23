@@ -21,7 +21,7 @@ targets:
     platform: iOS
     sources: [Sources]
     dependencies:
-      # The SHIPPED XCFramework. Download it from the sdk-v1.7.1 release and
+      # The SHIPPED XCFramework. Download it from the sdk-v1.8.0 release and
       # unzip it into Frameworks/ — see README.md. Not committed: you are meant
       # to verify its SHA-256 against the release notes first.
       #
@@ -42,3 +42,20 @@ targets:
         UILaunchScreen: {}
         NayutalBaseUrl: $(NAYUTAL_BASE_URL)
         NayutalApiKey: $(NAYUTAL_API_KEY)
+    scheme:
+      testTargets: [SDKDemoTests]
+  # The demo's configuration test: its SDK configuration never turns the certificate check off.
+  SDKDemoTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [Tests]
+    dependencies:
+      - target: SDKDemo
+      - framework: Frameworks/NayutalSDK.xcframework
+        embed: false
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.9"

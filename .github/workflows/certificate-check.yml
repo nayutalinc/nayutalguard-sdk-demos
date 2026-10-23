@@ -1,0 +1,32 @@
+# certificate-check — the demo apps never turn the SDK's certificate check off.
+#
+# Runs scripts/check-certificate-check.mjs: red if any demo source passes certificateCheck
+# anything but the literal true (the same rules as the Nayutal Guard apps' own guards). The
+# self-test runs first so a check that can no longer fail is itself a failure. Each demo's own
+# unit test asserts its configuration reads true; this is the part every change runs.
+#
+# Read-only: no secrets, no writes, no tokens beyond the checkout. The only permission is
+# contents: read.
+name: certificate-check
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certificate-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: The guard must be able to fail
+        run: node scripts/check-certificate-check.mjs --selftest
+      - name: No demo source turns the certificate check off
+        run: node scripts/check-certificate-check.mjs
