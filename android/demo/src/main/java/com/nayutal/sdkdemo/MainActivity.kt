@@ -77,7 +77,8 @@ class MainActivity : Activity() {
         val scanner = built.getOrElse { e ->
             output.text = if (e is NayutalConfigurationException) {
                 // The message names the rule broken (a missing key, a refused DNS baseline), never the value.
-                "SDK init failed: ${e.message}\nBuild with -PNAYUTAL_API_KEY=...; no scan runs without a key."
+                "SDK init failed: ${e.message}\nNo scan runs until the configuration is fixed." +
+                    if (BuildConfig.NAYUTAL_API_KEY.isBlank()) "\nBuild with -PNAYUTAL_API_KEY=..." else ""
             } else {
                 "SDK init failed: ${e.javaClass.simpleName}: ${e.message}"
             }
