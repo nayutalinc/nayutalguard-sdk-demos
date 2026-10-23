@@ -7,18 +7,20 @@
 // never made, and an interception on a pinned service would go unreported. Removing this
 // guard is a deliberate decision, not a cleanup.
 //
-// Red if any demo source (android/demo/src outside test/ and androidTest/, Kotlin and Java;
-// ios/SDKDemo/Sources, Swift) passes certificateCheck anything but the literal `true`. The
-// match is broad on purpose: `false`, a negation, a flag or a build constant all count, since
-// the decision is "never" and the guard does not try to evaluate. Comments are not code: a
-// block comment, and a line comment only where `//` starts the line or follows whitespace (a
-// URL's `https://` is code). Names that merely begin with the word (`certificateCheckPassed`)
-// and Swift declarations (`let certificateCheck: Bool`) are not the argument.
+// Red if any demo source (android/demo/src outside the src/test and src/androidTest source sets,
+// Kotlin and Java; ios/SDKDemo/Sources, Swift) passes certificateCheck anything but the literal
+// `true`. The match is broad on purpose: `false`, a negation, a flag or a build constant all
+// count, since the decision is "never" and the guard does not try to evaluate. String literals
+// and comments are not code. Names that merely begin with the word (`certificateCheckPassed`),
+// declarations (`val certificateCheck = ...`, `let certificateCheck: Bool`) and member references
+// (`case .certificateCheck:`) are not the argument. A Swift function parameter declared with the
+// name (`func f(certificateCheck: Bool)`) is still reported: it fails closed, and a demo has no
+// reason to declare one.
 //
-// The rules are the same as the Nayutal Guard apps' own guards, so both refuse the same forms:
-//   Kotlin/Java: a named `certificateCheck =` with any value but `true`, and any bare `false`
-//                inside a `NayutalSdkConfig(...)` argument list (the configuration has no other
-//                boolean, so a positional or Java call passing `false` can only be turning it off).
+// The rules:
+//   Kotlin/Java: a named `certificateCheck =` with any value but `true`, and an unnamed argument
+//                in certificateCheck's position of a `NayutalSdkConfig(...)` call (the 10th) with
+//                any value but `true`, as a positional Kotlin call or a Java call passes it.
 //   Swift:       a `certificateCheck:` argument with any value but `true`.
 //
 // Each demo also has a unit test asserting that its configuration reads certificateCheck true
@@ -27,34 +29,56 @@
 // Usage:
 //   node scripts/check-certificate-check.mjs             # check; exit 1 on any finding
 //   node scripts/check-certificate-check.mjs --selftest  # the guard must be able to fail
-import { readFileSync, readdirSync, statSync, existsSync, mkdtempSync, cpSync, writeFileSync, rmSync, realpathSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync, mkdtempSync, mkdirSync, cpSync, writeFileSync, rmSync, realpathSync } from 'node:fs';
 import { join, relative, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
+// String literals are emptied first, so a "/*" or "//" inside one (an Accept header such as
+// "text/*", a URL) never starts a comment that hides real code; then comments are removed.
 function stripComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n').map((l) => l.replace(/(^|\s)\/\/.*$/, '')).join('\n');
+  return source.replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n');
 }
+
+// The top-level arguments of the call whose "(" ends at `start`: nested (), {} and [] are skipped,
+// so a lambda's own commas or booleans are never an argument.
+function topLevelArguments(code, start) {
+  const args = [];
+  let depth = 0;
+  let from = start;
+  for (let i = start; i < code.length; i++) {
+    const c = code[i];
+    if ('({['.includes(c)) depth++;
+    else if (')}]'.includes(c)) {
+      if (depth === 0) { args.push(code.slice(from, i)); return args; }
+      depth--;
+    } else if (c === ',' && depth === 0) { args.push(code.slice(from, i)); from = i + 1; }
+  }
+  return args;
+}
+
+// NayutalSdkConfig's parameters in declaration order (SDK 1.8.0, android/sdk NayutalScanner.kt): a
+// positional call, Kotlin or Java, passes certificateCheck as the argument at this index.
+const CERTIFICATE_CHECK_POSITION = 9;
 
 // What a Kotlin or Java source passes certificateCheck other than `true`.
 export function offendingKotlin(source) {
   const code = stripComments(source);
-  const named = [...code.matchAll(/\bcertificateCheck\s*=(?!=)\s*([^,)\s][^,)\n]*)/g)]
+  // A declaration (`val certificateCheck = ...`) or a member reference is not the argument.
+  const named = [...code.matchAll(/(?<!\b(?:val|var)\s{1,8})(?<![.\w])certificateCheck\s*=(?!=)\s*([^,)\s][^,)\n]*)/g)]
     .map((m) => m[1].trim()).filter((v) => v !== 'true').map((v) => `certificateCheck = ${v}`);
   const positional = [];
   for (const m of code.matchAll(/\bNayutalSdkConfig\s*\(/g)) {
-    const start = m.index + m[0].length;
-    let depth = 1;
-    let i = start;
-    while (i < code.length && depth > 0) {
-      if (code[i] === '(') depth++;
-      else if (code[i] === ')') depth--;
-      i++;
+    const arg = topLevelArguments(code, m.index + m[0].length)[CERTIFICATE_CHECK_POSITION];
+    // An unnamed argument in certificateCheck's place: anything but `true` (false, a negation, a flag,
+    // Boolean.FALSE) turns the check off or might.
+    if (arg !== undefined && !/^\s*\w+\s*=(?!=)/.test(arg) && arg.trim() !== 'true') {
+      positional.push(`NayutalSdkConfig(..., ${arg.trim()} as certificateCheck)`);
     }
-    if (/\bfalse\b/.test(code.slice(start, Math.max(i - 1, start)))) positional.push('NayutalSdkConfig(... false ...)');
   }
   return [...named, ...positional];
 }
@@ -62,7 +86,9 @@ export function offendingKotlin(source) {
 // What a Swift source passes the certificateCheck argument other than `true`; spans line breaks.
 export function offendingSwift(source) {
   const code = stripComments(source);
-  return [...code.matchAll(/(?<!\b(?:var|let)\s{1,8})\bcertificateCheck\s*:\s*([^,)\s][^,)\n]*)/g)]
+  // A declaration (`let certificateCheck: Bool`) and a member reference (`case .certificateCheck:`) are not
+  // the argument.
+  return [...code.matchAll(/(?<!\b(?:var|let)\s{1,8})(?<![.\w])certificateCheck\s*:\s*([^,)\s][^,)\n]*)/g)]
     .map((m) => m[1].trim()).filter((v) => v !== 'true').map((v) => `certificateCheck: ${v}`);
 }
 
@@ -79,7 +105,7 @@ function walk(dir, keep, out = []) {
 // Every finding in the tree at `root`. Fails closed: a tree where either demo's sources cannot be
 // found is a finding, never a pass by not looking.
 export function check(root) {
-  const kotlin = walk(join(root, 'android/demo/src'), (p) => /\.(kt|java)$/.test(p) && !/\/(test|androidTest)\//.test(p));
+  const kotlin = walk(join(root, 'android/demo/src'), (p) => /\.(kt|java)$/.test(p) && !/\/src\/(test|androidTest)\//.test(p));
   const swift = walk(join(root, 'ios/SDKDemo/Sources'), (p) => p.endsWith('.swift'));
   const found = [];
   if (kotlin.length === 0) found.push('android/demo/src: no Kotlin or Java sources found (failing closed)');
@@ -102,6 +128,11 @@ function selftest() {
     'NayutalSdkConfig(baseUrl = "https://api.example.jp/", apiKey = key, certificateCheck = false)',
     'NayutalSdkConfig(url, key, null, null, null, null, null, logger, null, false)',
     'new NayutalSdkConfig(url, key, null, null, null, null, null, logger, null, false);',
+    // Positional forms that are not the literal false, and a string that looks like a comment opener.
+    'NayutalSdkConfig(u, null, k, null, null, null, null, logger, null, !true)',
+    'NayutalSdkConfig(u, null, k, null, null, null, null, logger, null, BuildConfig.CC)',
+    'new NayutalSdkConfig(u, null, k, null, null, null, null, logger, null, Boolean.FALSE, null);',
+    'val h = "text/*"\nval c = NayutalSdkConfig(baseUrl = u, apiKey = k, certificateCheck = false)\n/* x */',
   ]) expect(offendingKotlin(planted).length > 0, `Kotlin planted form passed: ${JSON.stringify(planted)}`);
   for (const clean of [
     'NayutalSdkConfig(baseUrl = u, apiKey = k, certificateCheck = true)',
@@ -111,6 +142,9 @@ function selftest() {
     'if (config.certificateCheck == false) log()',
     'NayutalSdkConfig(baseUrl = "https://api.example.jp/", apiKey = key) // a URL, then a comment',
     'val ok = false; NayutalSdkConfig(baseUrl = u, apiKey = k)',
+    'val certificateCheck = config.certificateCheck',
+    'NayutalSdkConfig(baseUrl = u, apiKey = k, requestHeaders = { if (debug == false) mapOf() else mapOf() })',
+    'NayutalSdkConfig(u, null, k, null, null, null, null, logger, null, true, { mapOf("a" to "false") })',
   ]) expect(offendingKotlin(clean).length === 0, `Kotlin near miss tripped: ${JSON.stringify(clean)}`);
   for (const planted of [
     'NayutalSdkConfig(baseUrl: u, apiKey: k, certificateCheck: false)',
@@ -118,6 +152,7 @@ function selftest() {
     'NayutalSdkConfig(baseUrl: u, apiKey: k, certificateCheck: Flags.certCheck)',
     'NayutalSdkConfig(\n    certificateCheck:\n        false\n)',
     'NayutalSdkConfig(baseUrl: "https://api.example.jp/", apiKey: key, certificateCheck: false)',
+    'let s = "a/*b"\nNayutalSdkConfig(baseUrl: u, apiKey: k, certificateCheck: false)',
   ]) expect(offendingSwift(planted).length === 1, `Swift planted form passed: ${JSON.stringify(planted)}`);
   for (const clean of [
     'NayutalSdkConfig(baseUrl: u, apiKey: k, certificateCheck: true)',
@@ -127,6 +162,7 @@ function selftest() {
     'NayutalSdkConfig(baseUrl: "https://api.example.jp/", apiKey: key) // a URL, then a comment',
     'let certificateCheck: Bool = result.ok',
     '@Published var certificateCheck: CheckState',
+    'case .certificateCheck:\n    return "cert"',
   ]) expect(offendingSwift(clean).length === 0, `Swift near miss tripped: ${JSON.stringify(clean)}`);
 
   // The real tree is clean, and the same tree with the check turned off in each demo's
@@ -145,6 +181,19 @@ function selftest() {
       expect(from.test(text), `${file}: the configuration no longer writes the default out; update the plant`);
       writeFileSync(join(tmp, file), text.replace(from, to));
       expect(check(tmp).found.some((f) => f.startsWith(file)), `${file}: certificateCheck turned off in a tree copy was not caught`);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  }
+  // A main-source file in a package named `test` is app code, and is scanned.
+  {
+    const tmp = mkdtempSync(join(tmpdir(), 'cc-guard-'));
+    try {
+      const dir = join(tmp, 'android/demo/src/main/java/com/nayutal/sdkdemo/test');
+      cpSync(join(REPO, 'ios/SDKDemo/Sources'), join(tmp, 'ios/SDKDemo/Sources'), { recursive: true });
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, 'DebugConfig.kt'), 'val c = NayutalSdkConfig(baseUrl = u, apiKey = k, certificateCheck = false)\n');
+      expect(check(tmp).found.some((f) => f.includes('/test/DebugConfig.kt')), 'a main source under a package named test was not scanned');
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }
