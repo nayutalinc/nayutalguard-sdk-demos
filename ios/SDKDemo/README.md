@@ -19,14 +19,14 @@ there is no stale `.pbxproj` to merge.
 
 ## 1. Get the SDK artifact
 
-`NayutalSDK-1.10.0.xcframework.zip` comes from one of two places, and the bytes are the same:
+`NayutalSDK-1.11.0.xcframework.zip` comes from one of two places, and the bytes are the same:
 
 - the SDK package Nayutal handed you with your integration (the usual path), or
-- the assets of the **sdk-v1.10.0** GitHub release, if your integration includes
+- the assets of the **sdk-v1.11.0** GitHub release, if your integration includes
   access to the `nayutalguard` repository (the page is not public):
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.10.0
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.11.0
 ```
 
 Either way, verify the file against the published hash table in step 2 before
@@ -38,13 +38,13 @@ The release notes publish a SHA-256 for every artifact. Check the file you
 downloaded against the value on that page:
 
 ```bash
-shasum -a 256 NayutalSDK-1.10.0.xcframework.zip
+shasum -a 256 NayutalSDK-1.11.0.xcframework.zip
 ```
 
-Expected for `NayutalSDK-1.10.0.xcframework.zip`:
+Expected for `NayutalSDK-1.11.0.xcframework.zip`:
 
 ```text
-8c58596f52faf1534d5a02ec79dfd214d20dc8900630413ff4f8767784d1d697
+dcb9e721ee74306f7409e426d9d33c4158f29f7d6b0e72b51a023de1e85da758
 ```
 
 If it does not match, stop and tell us. Do not build against it.
@@ -53,7 +53,7 @@ If it does not match, stop and tell us. Do not build against it.
 
 ```bash
 mkdir -p Frameworks
-unzip NayutalSDK-1.10.0.xcframework.zip -d Frameworks/
+unzip NayutalSDK-1.11.0.xcframework.zip -d Frameworks/
 ```
 
 You should end up with `Frameworks/NayutalSDK.xcframework`. That path is

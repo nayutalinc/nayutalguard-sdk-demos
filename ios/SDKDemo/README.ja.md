@@ -1,4 +1,4 @@
-<!-- en-source: ios/SDKDemo/README.md sha256:3b586e479a2bca846831e2b41f896f8a2ecb6b8a23c787e3339545394a6d5b5c -->
+<!-- en-source: ios/SDKDemo/README.md sha256:932a21e974f685664647a6fa36e2aa522dd4676f181810176b9490e0495c5d30 -->
 # NayutalGuard SDK — iOS デモ
 
 English: [README.md](README.md)
@@ -18,13 +18,13 @@ Xcode プロジェクトはコミットせず、`project.yml` から生成しま
 
 ## 1. SDK の成果物を入手する
 
-`NayutalSDK-1.10.0.xcframework.zip` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
+`NayutalSDK-1.11.0.xcframework.zip` の入手先は次の 2 つのいずれかで、内容は同じバイト列です。
 
 - 組み込みの際に Nayutal からお渡しした SDK パッケージ（通常はこちらです）
-- **sdk-v1.10.0** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
+- **sdk-v1.11.0** の GitHub リリースのアセット。お客様の組み込みに `nayutalguard` リポジトリへのアクセスが含まれている場合に利用できます（このページは公開されていません）。
 
 ```text
-https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.10.0
+https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.11.0
 ```
 
 いずれの場合も、組み込む前に手順 2 で公開されているハッシュ値の一覧表と照合してください。
@@ -34,13 +34,13 @@ https://github.com/nayutalinc/nayutalguard/releases/tag/sdk-v1.10.0
 リリースノートには成果物ごとに SHA-256 を掲載しています。ダウンロードしたファイルをそのページの値と照合してください。
 
 ```bash
-shasum -a 256 NayutalSDK-1.10.0.xcframework.zip
+shasum -a 256 NayutalSDK-1.11.0.xcframework.zip
 ```
 
-`NayutalSDK-1.10.0.xcframework.zip` の期待値:
+`NayutalSDK-1.11.0.xcframework.zip` の期待値:
 
 ```text
-8c58596f52faf1534d5a02ec79dfd214d20dc8900630413ff4f8767784d1d697
+dcb9e721ee74306f7409e426d9d33c4158f29f7d6b0e72b51a023de1e85da758
 ```
 
 一致しない場合は作業を止めて、私たちにご連絡ください。その成果物に対してビルドしないでください。
@@ -49,7 +49,7 @@ shasum -a 256 NayutalSDK-1.10.0.xcframework.zip
 
 ```bash
 mkdir -p Frameworks
-unzip NayutalSDK-1.10.0.xcframework.zip -d Frameworks/
+unzip NayutalSDK-1.11.0.xcframework.zip -d Frameworks/
 ```
 
 `Frameworks/NayutalSDK.xcframework` ができていれば完了です。このパスは意図的に gitignore しています。成果物はダウンロードして検証するものであり、コミットするものではありません。

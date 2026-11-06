@@ -1,4 +1,4 @@
-<!-- en-source: README.md sha256:f65816530555dbef5e4b45b1def913f1cc754378fd357e33a638177e8b6ce5b2 -->
+<!-- en-source: README.md sha256:b25730f58610884f58808830266062270c790f2d889868a970323892f7ed8f84 -->
 # NayutalGuard SDK — デモホスト
 
 English: [README.md](README.md)
@@ -7,26 +7,26 @@ English: [README.md](README.md)
 
 NayutalGuard SDK を組み込んだ最小限のホストアプリケーションを、プラットフォームごとに 1 つずつ用意しています。いずれも画面は 1 つ（スキャンボタンと、順次届く結果の表示）で、組み込みの全体像を示します。成果物を組み込む、ビルド時に認証情報を注入する、スキャンを実行する、イベントストリームを受け取る、という流れです。
 
-どちらのデモも **SDK 1.10.0** に対してビルドし、結果は **スキーマ 1.8.0** で表示します。
+どちらのデモも **SDK 1.11.0** に対してビルドし、結果は **スキーマ 1.8.0** で表示します。
 
 現行 API のホスト側の使い方（初期化の失敗、フィードの状態、測定できなかった理由、observations、1.8.0 で追加された任意の設定項目：DNS の基準、有効のままの証明書チェック、リクエストヘッダープロバイダー）も示します。
 
 | デモ | プラットフォーム | 組み込む成果物 |
 |---|---|---|
-| [`android/demo`](android/demo/) | Android（Kotlin） | `libs/` に置いた `nayutal-sdk-1.10.0.aar` |
+| [`android/demo`](android/demo/) | Android（Kotlin） | `libs/` に置いた `nayutal-sdk-1.11.0.aar` |
 | [`ios/SDKDemo`](ios/SDKDemo/) | iOS（Swift、XcodeGen） | `Frameworks/` に置いた `NayutalSDK.xcframework` |
 
 ## 成果物
 
-SDK パッケージは Nayutal からお客様にお渡しします。組み込む前に、受け取った成果物を公開されているハッシュ値と照合してください。1.10.0 の値は次のとおりです。
+SDK パッケージは Nayutal からお客様にお渡しします。組み込む前に、受け取った成果物を公開されているハッシュ値と照合してください。1.11.0 の値は次のとおりです。
 
 | 成果物 | SHA-256 |
 |---|---|
-| `nayutal-sdk-1.10.0.aar` | `72442f86f102220411f5f2dc5475ee32b1e75c971517a2b51673fcce08d2f83d` |
-| `NayutalSDK-1.10.0.xcframework.zip` | `8c58596f52faf1534d5a02ec79dfd214d20dc8900630413ff4f8767784d1d697` |
+| `nayutal-sdk-1.11.0.aar` | `1e84e6ab6271c8d42fea97eae627337b5447cc9561d6dd8aab73655ea447e835` |
+| `NayutalSDK-1.11.0.xcframework.zip` | `dcb9e721ee74306f7409e426d9d33c4158f29f7d6b0e72b51a023de1e85da758` |
 
 ```bash
-shasum -a 256 nayutal-sdk-1.10.0.aar NayutalSDK-1.10.0.xcframework.zip
+shasum -a 256 nayutal-sdk-1.11.0.aar NayutalSDK-1.11.0.xcframework.zip
 ```
 
 各リリースの同じ一覧表は次のページで公開しています。
